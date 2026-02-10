@@ -1,0 +1,55 @@
+{
+    "nodes": [
+        {"symbol":  "H", "max_degree": 1},
+        {"symbol":  "F", "max_degree": 1},
+        {"symbol": "Cl", "max_degree": 1},
+        {"symbol": "Br", "max_degree": 1},
+        {"symbol":  "I", "max_degree": 1},
+        {"symbol":  "B", "max_degree": 3},
+        {"symbol":  "C", "max_degree": 4},
+        {"symbol":  "N", "max_degree": 3},
+        {"symbol":  "O", "max_degree": 2},
+        {"symbol":  "P", "max_degree": 5},
+        {"symbol":  "S", "max_degree": 6},
+        {"symbol":  "*", "max_degree": 8}
+    ],
+    "edges": [
+        {"symbol": "-", "weight": 1},
+        {"symbol": "=", "weight": 2},
+        {"symbol": "#", "weight": 3},
+        {"symbol": "*", "weight": 1}
+    ],
+    "branch": {"symbol": "Branch", "max_length_tokens": 4},
+    "link": {"symbol": "Ring", "max_index_tokens": 4},
+    "index": [
+        {"symbol": "Index0", "value":  0},
+        {"symbol": "Index1", "value":  1},
+        {"symbol": "Index2", "value":  2},
+        {"symbol": "Index3", "value":  3},
+        {"symbol": "Index4", "value":  4},
+        {"symbol": "Index5", "value":  5},
+        {"symbol": "Index6", "value":  6},
+        {"symbol": "Index7", "value":  7},
+        {"symbol": "Index8", "value":  8},
+        {"symbol": "Index9", "value":  9},
+        {"symbol": "IndexA", "value": 10},
+        {"symbol": "IndexB", "value": 11},
+        {"symbol": "IndexC", "value": 12},
+        {"symbol": "IndexD", "value": 13},
+        {"symbol": "IndexE", "value": 14},
+        {"symbol": "IndexF", "value": 15}
+    ],
+    "modifiers" : [
+        {"symbol": "+1", "weight": -1, "exceptions": {
+            "B" : {"weight": 1}, "C": {"weight": 1}, "S" : {"weight": 1}, "P" : {"weight": 1}
+        }},
+        {"symbol": "-1", "weight":  1, "exceptions": {
+            "B" : {"weight":-1}, "C": {"weight": 1}, "S" : {"weight": 1}, "P" : {"weight":-1}
+        }},
+        {"symbol":  "@", "weight":  0, "data": {"chiral_order": 1}},
+        {"symbol": "@@", "weight":  0, "data": {"chiral_order": 2}},
+        {"symbol": "H1", "weight":  1},
+        {"symbol": "H2", "weight":  2},
+        {"symbol": "H3", "weight":  3}
+    ]
+}

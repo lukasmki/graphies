@@ -11,14 +11,17 @@ from rdkit import Chem
 # )
 
 smiles = "c1ccccc1"
+smiles = "C/C=C\\C"
+
 selfies = sf.encoder(smiles)
 print(smiles, selfies)
+Decoder().run(selfies)
 
-alphabet = sf.get_semantic_robust_alphabet()  # Gets the alphabet of robust symbols
-rnd_selfies = "".join(random.sample(list(alphabet), 16))
-print("SELFIES\n", rnd_selfies)
-Decoder().run(rnd_selfies)
-rnd_smiles = sf.decoder(rnd_selfies)
-print("SMILES\n", rnd_smiles)
-mol = Chem.MolFromSmiles(rnd_smiles)
-print("STRUCTURE\n", json.dumps(nx.node_link_data(rdkit2networkx(mol)), indent=2))
+# alphabet = sf.get_semantic_robust_alphabet()  # Gets the alphabet of robust symbols
+# rnd_selfies = "".join(random.sample(list(alphabet), 16))
+# print("SELFIES\n", rnd_selfies)
+# Decoder().run(rnd_selfies)
+# rnd_smiles = sf.decoder(rnd_selfies)
+# print("SMILES\n", rnd_smiles)
+# mol = Chem.MolFromSmiles(rnd_smiles)
+# print("STRUCTURE\n", json.dumps(nx.node_link_data(rdkit2networkx(mol)), indent=2))

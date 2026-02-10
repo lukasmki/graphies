@@ -1,5 +1,5 @@
+from metaselfies.dictionary import Dictionary
 from typing import Pattern, Match
-from dataclasses import dataclass
 from networkx import Graph
 import re
 from enum import Enum
@@ -15,21 +15,22 @@ class TokenType(Enum):
     INDEX = 6
 
 
-@dataclass
-class State:
-    pass
-
-
 class Decoder:
+    """Decode metaselfies to networkx.Graph"""
+
     TOKEN_RE: Pattern[str] = re.compile(r"\[[^\]]*\]|[^\[\]\s]")
 
+    def __init__(self, dictionary: Dictionary | None = None):
+        pass
+
     def classify_token(self, token: Match[str]) -> TokenType:
-        print(token.group())
+        tok = token.group()
+
+        print(tok)
+
         return TokenType.STOP
 
     def run(self, data: str) -> Graph:
-        state = State()
-
         tokens = self.TOKEN_RE.finditer(data)
         for token in tokens:
             token_type = self.classify_token(token)
