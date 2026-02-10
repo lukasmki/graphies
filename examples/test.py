@@ -1,3 +1,5 @@
+from pathlib import Path
+from metaselfies.grammar import Grammar
 import json
 from molify import rdkit2networkx, networkx2rdkit
 import networkx as nx
@@ -6,16 +8,20 @@ from metaselfies.decoder import Decoder
 import random
 from rdkit import Chem
 
-# Decoder().run(
-#     "[C][C][Branch1][C][C][C][=C][C][=Branch2][Branch1][Ring1][=N][Branch1][=N][C][=Branch1][C][=O][C][=C][C][=C][C][=C][Ring1][=Branch1][Pt+2][Branch1][C][Cl-1][Branch1][C][Cl-1][N][Branch1][=N][C][=Branch1][C][=O][C][=C][C][=C][C][=C][Ring1][=Branch1][=C][C][=C][C][Branch1][C][C][Branch1][C][C][N][Ring1][#Branch1][N][Ring2][Ring2][C]"
-# )
+# grammar = Grammar.from_file("examples/protein.json")
+# Path("examples/protein_vocab.json").write_text(json.dumps(grammar.to_alphabet(), indent=4))
+
+grammar = Grammar.from_file(path="examples/selfies.json")
+# Path("examples/selfies_vocab.json").write_text(json.dumps(dictionary.to_alphabet(), indent=4))
+
+decoder = Decoder(grammar)
 
 smiles = "c1ccccc1"
-smiles = "C/C=C\\C"
+# smiles = "C/C=C\\C"
 
 selfies = sf.encoder(smiles)
 print(smiles, selfies)
-Decoder().run(selfies)
+decoder.run(selfies)
 
 # alphabet = sf.get_semantic_robust_alphabet()  # Gets the alphabet of robust symbols
 # rnd_selfies = "".join(random.sample(list(alphabet), 16))

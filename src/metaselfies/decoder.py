@@ -1,4 +1,5 @@
-from metaselfies.dictionary import Dictionary
+from pathlib import Path
+from metaselfies.grammar import Grammar
 from typing import Pattern, Match
 from networkx import Graph
 import re
@@ -20,8 +21,8 @@ class Decoder:
 
     TOKEN_RE: Pattern[str] = re.compile(r"\[[^\]]*\]|[^\[\]\s]")
 
-    def __init__(self, dictionary: Dictionary | None = None):
-        pass
+    def __init__(self, grammar: Grammar):
+        self.grammar = grammar
 
     def classify_token(self, token: Match[str]) -> TokenType:
         tok = token.group()

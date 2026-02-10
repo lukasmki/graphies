@@ -1,0 +1,135 @@
+{
+    "nodes": [
+        { "symbol": "ALA", "max_degree": 4 },
+        { "symbol": "GLY", "max_degree": 5 },
+        { "symbol": "SER", "max_degree": 4 },
+        { "symbol": "THR", "max_degree": 4 },
+        { "symbol": "CYS", "max_degree": 4 },
+        { "symbol": "VAL", "max_degree": 4 },
+        { "symbol": "LEU", "max_degree": 4 },
+        { "symbol": "ILE", "max_degree": 4 },
+        { "symbol": "MET", "max_degree": 4 },
+        { "symbol": "ASP", "max_degree": 5 },
+        { "symbol": "GLU", "max_degree": 5 },
+        { "symbol": "ASN", "max_degree": 5 },
+        { "symbol": "GLN", "max_degree": 5 },
+        { "symbol": "HIS", "max_degree": 6 },
+        { "symbol": "LYS", "max_degree": 6 },
+        { "symbol": "ARG", "max_degree": 6 },
+        { "symbol": "PHE", "max_degree": 4 },
+        { "symbol": "TYR", "max_degree": 5 },
+        { "symbol": "TRP", "max_degree": 5 },
+        { "symbol": "PRO", "max_degree": 3 },
+        { "symbol": "*",   "max_degree": 6 }
+    ],
+
+    "edges": [
+        {
+            "symbol": "--",
+            "weight": 1,
+            "type": "peptide_bond",
+            "allowed_pairs": "sequential"
+        },
+        {
+            "symbol": "HB",
+            "weight": 1,
+            "type": "hydrogen_bond"
+        },
+        {
+            "symbol": "SB",
+            "weight": 2,
+            "type": "salt_bridge"
+        },
+        {
+            "symbol": "HP",
+            "weight": 1,
+            "type": "hydrophobic_contact"
+        },
+        {
+            "symbol": "AR",
+            "weight": 2,
+            "type": "aromatic_stacking"
+        },
+        {
+            "symbol": "SS",
+            "weight": 3,
+            "type": "disulfide_bond",
+            "allowed_pairs": ["CYS", "CYS"]
+        }
+    ],
+
+    "branch": {
+        "symbol": "Loop",
+        "max_length_tokens": 12
+    },
+
+    "link": {
+        "symbol": "Contact",
+        "max_length_tokens": 6
+    },
+
+    "index": [
+        { "symbol": "Index0", "value": 0 },
+        { "symbol": "Index1", "value": 1 },
+        { "symbol": "Index2", "value": 2 },
+        { "symbol": "Index3", "value": 3 },
+        { "symbol": "Index4", "value": 4 },
+        { "symbol": "Index5", "value": 5 },
+        { "symbol": "Index6", "value": 6 },
+        { "symbol": "Index7", "value": 7 },
+        { "symbol": "Index8", "value": 8 },
+        { "symbol": "Index9", "value": 9 }
+    ],
+
+    "modifiers": [
+        {
+            "symbol": "H",
+            "weight": 0,
+            "type": "secondary_structure",
+            "data": { "structure": "alpha_helix" }
+        },
+        {
+            "symbol": "E",
+            "weight": 0,
+            "type": "secondary_structure",
+            "data": { "structure": "beta_strand" }
+        },
+        {
+            "symbol": "C",
+            "weight": 0,
+            "type": "secondary_structure",
+            "data": { "structure": "coil" }
+        },
+        {
+            "symbol": "cis",
+            "weight": 1,
+            "allowed_nodes": ["PRO"],
+            "type": "backbone_conformation",
+            "data": { "omega": "cis" }
+        },
+        {
+            "symbol": "bur",
+            "weight": -1,
+            "type": "solvent_accessibility",
+            "data": { "state": "buried" }
+        },
+        {
+            "symbol": "exp",
+            "weight": 1,
+            "type": "solvent_accessibility",
+            "data": { "state": "exposed" }
+        },
+        {
+            "symbol": "+",
+            "weight": -1,
+            "allowed_nodes": ["LYS", "ARG", "HIS"],
+            "type": "sidechain_charge"
+        },
+        {
+            "symbol": "-",
+            "weight": 1,
+            "allowed_nodes": ["ASP", "GLU"],
+            "type": "sidechain_charge"
+        }
+    ]
+}
