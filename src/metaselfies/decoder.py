@@ -23,11 +23,15 @@ class Decoder:
 
     def __init__(self, grammar: Grammar):
         self.grammar = grammar
+        self.mods: list[str] = sorted(
+            [m.symbol for m in grammar.modifiers], key=len, reverse=True
+        )
 
     def classify_token(self, token: Match[str]) -> TokenType:
-        tok = token.group()
+        tok = token.group().strip("[]")
 
         print(tok)
+        print(self.grammar.MOD_RE.findall(tok))
 
         return TokenType.STOP
 

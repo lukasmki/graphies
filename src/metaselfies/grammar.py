@@ -1,3 +1,4 @@
+import re
 from collections import defaultdict
 from itertools import product
 from typing import Any, Self, Iterable
@@ -42,6 +43,18 @@ class Grammar(BaseModel):
     branch: BranchLink
     link: BranchLink
     modifiers: list[Modifier]
+
+    def model_post_init(self, __context: object) -> None:
+        modsym: list[str] = [m.symbol for m in self.modifiers]
+        modsym = sorted(modsym, key=lambda x: len(x), reverse=True)
+        mod_symbols = "|".join(modsym)
+
+        edgesym: list[str] = [e.symbol for e in self.edges]
+        edgesym = sorted(edgesym, key=lambda x: len(x), reverse=True)
+        edge_symbols = "|".join(edgesym)
+
+        pattern = rf"\[(?P<edge>(?:{edge_symbols}))(?P<node>.*?)(?P<modifiers>(?:{mod_symbols}|\d)*)\]"
+        rf"\[(?P<edge>(?:{edge_symbols}))(?P<node>.*?)(?P<modifiers>(?:{mod_symbols})*)(?P<idx>\d*?)\]"
 
     @classmethod
     def from_file(cls, path: str | Path) -> Self:
