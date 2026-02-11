@@ -12,7 +12,9 @@ from rdkit import Chem
 # Path("examples/protein_vocab.json").write_text(json.dumps(grammar.to_alphabet(), indent=4))
 
 grammar = Grammar.from_file(path="examples/selfies.json")
-# Path("examples/selfies_vocab.json").write_text(json.dumps(dictionary.to_alphabet(), indent=4))
+Path("examples/selfies_vocab.json").write_text(
+    json.dumps(grammar.to_alphabet(), indent=4)
+)
 
 decoder = Decoder(grammar)
 

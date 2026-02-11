@@ -92,28 +92,25 @@ class Grammar(BaseModel):
 
         # branch symbols
         for edge in self.edges:
-            if edge.symbol == "*":
-                continue
+            edge_symbol = edge.symbol if edge.symbol != "*" else ""
             for ibranch in range(1, self.branch.max_length_tokens + 1):
-                alphabet[f"{edge.symbol}{self.branch.symbol}{ibranch}"] = i
+                alphabet[f"{edge_symbol}{self.branch.symbol}{ibranch}"] = i
                 i += 1
 
         # link symbols
         for edge in self.edges:
-            if edge.symbol == "*":
-                continue
+            edge_symbol = edge.symbol if edge.symbol != "*" else ""
             for ilink in range(1, self.link.max_length_tokens + 1):
-                alphabet[f"{edge.symbol}{self.link.symbol}{ilink}"] = i
+                alphabet[f"{edge_symbol}{self.link.symbol}{ilink}"] = i
                 i += 1
 
         # node symbols
         for edge in self.edges:
-            if edge.symbol == "*":
-                continue
+            edge_symbol = edge.symbol if edge.symbol != "*" else ""
             for node in self.nodes:
                 if node.symbol == "*":
                     continue
-                base = f"{edge.symbol}{node.symbol}"
+                base = f"{edge_symbol}{node.symbol}"
                 alphabet[base] = i
                 i += 1
                 for mods in self.modifier_combinations(node.symbol):
