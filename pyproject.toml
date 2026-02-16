@@ -9,9 +9,9 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "molify>=0.2.2",
-    "partialsmiles>=2.0",
     "pydantic>=2.12.5",
     "rdkit>=2025.9.3",
+    "rich>=14.3.2",
     "selfies>=2.2.0",
 ]
 

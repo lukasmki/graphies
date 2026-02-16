@@ -182,6 +182,18 @@ wheels = [
 ]
 
 [[package]]
+name = "markdown-it-py"
+version = "4.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mdurl" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5b/f5/4ec618ed16cc4f8fb3b701563655a69816155e79e24a17b651541804721d/markdown_it_py-4.0.0.tar.gz", hash = "sha256:cb0a2b4aa34f932c007117b194e945bd74e0ec24133ceb5bac59009cda1cb9f3", size = 73070, upload-time = "2025-08-11T12:57:52.854Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl", hash = "sha256:87327c59b172c5011896038353a81343b6754500a08cd7a4973bb48c6d578147", size = 87321, upload-time = "2025-08-11T12:57:51.923Z" },
+]
+
+[[package]]
 name = "matplotlib"
 version = "3.10.8"
 source = { registry = "https://pypi.org/simple" }
@@ -229,23 +241,32 @@ wheels = [
 ]
 
 [[package]]
+name = "mdurl"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729, upload-time = "2022-08-14T12:40:10.846Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979, upload-time = "2022-08-14T12:40:09.779Z" },
+]
+
+[[package]]
 name = "metaselfies"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "molify" },
-    { name = "partialsmiles" },
     { name = "pydantic" },
     { name = "rdkit" },
+    { name = "rich" },
     { name = "selfies" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "molify", specifier = ">=0.2.2" },
-    { name = "partialsmiles", specifier = ">=2.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "rdkit", specifier = ">=2025.9.3" },
+    { name = "rich", specifier = ">=14.3.2" },
     { name = "selfies", specifier = ">=2.2.0" },
 ]
 
@@ -366,15 +387,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c3/cc/dcf97010a04a102d59ec7ace11d0e269d909e27ddad969bdb107d7e62792/packmol-21.2.0-cp314-cp314t-win32.whl", hash = "sha256:3c930a13e12908672fe260da070f16eecd23215ab5084314aad396ac9a79d652", size = 228682, upload-time = "2026-01-15T22:42:04.226Z" },
     { url = "https://files.pythonhosted.org/packages/e2/63/c6f8cde8140c7b826e1c48ffcdc5ea7cad6e275ffa23418d72ba3a1b5da3/packmol-21.2.0-cp314-cp314t-win_amd64.whl", hash = "sha256:e5932d6a3f767d4ccfd24163a3cb77d5c16734e841f73e744171cb41c746148e", size = 228690, upload-time = "2026-01-15T22:42:05.855Z" },
     { url = "https://files.pythonhosted.org/packages/19/b7/9b8691b46127df88f484aaefabc31bee196d1cfb4dace0266d640f492bdc/packmol-21.2.0-cp314-cp314t-win_arm64.whl", hash = "sha256:f6a4fdd283372125d654bb8646f4e4c6996181226300ab59290f42716bba3d2e", size = 216874, upload-time = "2026-01-15T22:42:07.118Z" },
-]
-
-[[package]]
-name = "partialsmiles"
-version = "2.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/6d/e8/4b6964185bdf1afd98e0a339d2d1cb4ef5dd7841fb508092cdecd17d0d70/partialsmiles-2.0.tar.gz", hash = "sha256:93196545e48e0e00c0b1de8fedebcaae6477629b6730d313ec4d07ef7e74fa21", size = 12357, upload-time = "2025-01-14T14:59:31.376Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/08/d1/a01e68c4d54dacc58324e087b3fb97673094b16b88f3fa69788665a66124/partialsmiles-2.0-py3-none-any.whl", hash = "sha256:4dd563f826217f680ba306d14a45ee5f624a40276c14f7b1cd43d850c55cc23e", size = 19270, upload-time = "2025-01-14T14:59:30.088Z" },
 ]
 
 [[package]]
@@ -504,6 +516,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pygments"
+version = "2.19.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.3.2"
 source = { registry = "https://pypi.org/simple" }
@@ -543,6 +564,19 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/21/25/1999480b5239ac0cf714ef71adad11abc8e091130d69f59f1b631790f85d/rdkit-2025.9.3-cp314-cp314-manylinux_2_28_aarch64.whl", hash = "sha256:e5266f9fa5d8c6f63200edd6d8159d33adf3d7532e885677d748c02427b28764", size = 34885860, upload-time = "2025-12-03T13:34:21.924Z" },
     { url = "https://files.pythonhosted.org/packages/ec/b3/41186ad8118e3b7ebe9250eddfb0b45699737c8f0aaa69dc5b3d0edf9e4f/rdkit-2025.9.3-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:6aae71e6a3407b9b099496999634692e538c5936b5a3a8e034d44c5f2bcd9108", size = 36376596, upload-time = "2025-12-03T13:34:26.172Z" },
     { url = "https://files.pythonhosted.org/packages/3d/06/e3f8a71cd0a1ed50013789a96eab544a198cc7e4c55afffe7fc8654a5a98/rdkit-2025.9.3-cp314-cp314-win_amd64.whl", hash = "sha256:f47da0c0e138aaf0a0f0a8f1e2ecf35c0483fd037e1fe620af0d2cff6e5f778a", size = 24162376, upload-time = "2025-12-03T13:34:31.31Z" },
+]
+
+[[package]]
+name = "rich"
+version = "14.3.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown-it-py" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/74/99/a4cab2acbb884f80e558b0771e97e21e939c5dfb460f488d19df485e8298/rich-14.3.2.tar.gz", hash = "sha256:e712f11c1a562a11843306f5ed999475f09ac31ffb64281f73ab29ffdda8b3b8", size = 230143, upload-time = "2026-02-01T16:20:47.908Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ef/45/615f5babd880b4bd7d405cc0dc348234c5ffb6ed1ea33e152ede08b2072d/rich-14.3.2-py3-none-any.whl", hash = "sha256:08e67c3e90884651da3239ea668222d19bea7b589149d8014a21c633420dbb69", size = 309963, upload-time = "2026-02-01T16:20:46.078Z" },
 ]
 
 [[package]]

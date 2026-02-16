@@ -9,12 +9,12 @@
         {"symbol": "TRP", "max_degree": 5}, {"symbol": "PRO", "max_degree": 3}, {"symbol": "*",   "max_degree": 6}
     ],
     "edges"    : [
-        { "symbol": "--", "weight": 1, "type": "peptide_bond",        "allowed_pairs": "sequential"   },
-        { "symbol": "HB", "weight": 1, "type": "hydrogen_bond"                                        },
-        { "symbol": "SB", "weight": 2, "type": "salt_bridge"                                          },
-        { "symbol": "HP", "weight": 1, "type": "hydrophobic_contact"                                  },
-        { "symbol": "AR", "weight": 2, "type": "aromatic_stacking"                                    },
-        { "symbol": "SS", "weight": 3, "type": "disulfide_bond",      "allowed_pairs": ["CYS", "CYS"] }
+        { "symbol": "*", "weight": 1, "type": "peptide_bond"},
+        { "symbol": "HB", "weight": 1, "type": "hydrogen_bond"},
+        { "symbol": "SB", "weight": 2, "type": "salt_bridge"},
+        { "symbol": "HP", "weight": 1, "type": "hydrophobic_contact"},
+        { "symbol": "AR", "weight": 2, "type": "aromatic_stacking"},
+        { "symbol": "SS", "weight": 3, "type": "disulfide_bond"}
     ],
     "branch"   : {"symbol": "Loop", "max_length_tokens": 12},
     "link"     : {"symbol": "Contact", "max_length_tokens": 6},

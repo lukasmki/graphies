@@ -1,30 +1,30 @@
-import re
-from collections import defaultdict
-from itertools import product
-from typing import Any, Self, Iterable
-from pydantic import BaseModel
 import json
+from collections import defaultdict
+from enum import Enum
+from itertools import product
 from pathlib import Path
+from typing import Any, Iterable, Self
+
+from pydantic import BaseModel
+
+
+class TokenType(str, Enum):
+    NODE = "NODE"
+    BRANCH = "BRANCH"
+    LINK = "LINK"
+    INDEX = "INDEX"
+    UNKNOWN = "UNKNOWN"
 
 
 class Node(BaseModel):
     symbol: str
     max_degree: int | float
+    data: dict[str, Any] | None = None
 
 
 class Edge(BaseModel):
     symbol: str
     weight: int | float
-
-
-class BranchLink(BaseModel):
-    symbol: str
-    max_length_tokens: int
-
-
-class Index(BaseModel):
-    symbol: str
-    value: int
 
 
 class Modifier(BaseModel):
@@ -36,31 +36,56 @@ class Modifier(BaseModel):
     exceptions: dict[str, Any] | None = None
 
 
+class Structure(BaseModel):
+    symbol: str
+    value: int
+
+
+class TokenInstance(BaseModel):
+    type: TokenType
+    symbol: str
+    node: Node | Structure | None
+    edge: Edge | None
+    modifiers: list[Modifier]
+    idx: int | None = None
+
+    def serialize(self):
+        node_symbol = self.node.symbol if self.node is not None else ""
+        if (self.edge is None) or (self.edge.symbol == "*"):
+            edge_symbol = ""
+        else:
+            edge_symbol = self.edge.symbol
+        mods_symbol = "".join(m.symbol for m in self.modifiers)
+        return f"[{edge_symbol}{node_symbol}{mods_symbol}]"
+
+
 class Grammar(BaseModel):
-    index: list[Index]
     nodes: list[Node]
     edges: list[Edge]
-    branch: BranchLink
-    link: BranchLink
+    index: list[Structure]
+    links: list[Structure]
+    branches: list[Structure]
     modifiers: list[Modifier]
-
-    def model_post_init(self, __context: object) -> None:
-        modsym: list[str] = [m.symbol for m in self.modifiers]
-        modsym = sorted(modsym, key=lambda x: len(x), reverse=True)
-        mod_symbols = "|".join(modsym)
-
-        edgesym: list[str] = [e.symbol for e in self.edges]
-        edgesym = sorted(edgesym, key=lambda x: len(x), reverse=True)
-        edge_symbols = "|".join(edgesym)
-
-        pattern = rf"\[(?P<edge>(?:{edge_symbols}))(?P<node>.*?)(?P<modifiers>(?:{mod_symbols}|\d)*)\]"
-        rf"\[(?P<edge>(?:{edge_symbols}))(?P<node>.*?)(?P<modifiers>(?:{mod_symbols})*)(?P<idx>\d*?)\]"
 
     @classmethod
     def from_file(cls, path: str | Path) -> Self:
         path = Path(path) if isinstance(path, str) else path
         data = json.loads(path.resolve().read_text())
         return cls.model_validate(data)
+
+    @property
+    def default_edge(self):
+        for edge in self.edges:
+            if edge.symbol == "*":
+                return edge
+        return None
+
+    @property
+    def default_node(self):
+        for node in self.nodes:
+            if node.symbol == "*":
+                return node
+        return None
 
     def modifier_combinations(self, node_symbol: str) -> Iterable[list[Modifier]]:
         by_type: dict[str, list[Modifier]] = defaultdict(list)
@@ -93,15 +118,15 @@ class Grammar(BaseModel):
         # branch symbols
         for edge in self.edges:
             edge_symbol = edge.symbol if edge.symbol != "*" else ""
-            for ibranch in range(1, self.branch.max_length_tokens + 1):
-                alphabet[f"{edge_symbol}{self.branch.symbol}{ibranch}"] = i
+            for branch in self.branches:
+                alphabet[f"{edge_symbol}{branch.symbol}"] = i
                 i += 1
 
         # link symbols
         for edge in self.edges:
             edge_symbol = edge.symbol if edge.symbol != "*" else ""
-            for ilink in range(1, self.link.max_length_tokens + 1):
-                alphabet[f"{edge_symbol}{self.link.symbol}{ilink}"] = i
+            for link in self.links:
+                alphabet[f"{edge_symbol}{link.symbol}"] = i
                 i += 1
 
         # node symbols

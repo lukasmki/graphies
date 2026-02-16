@@ -1,6 +1,5 @@
-from metaselfies.decoder import Decoder
-from metaselfies.encoder import Encoder
+from metaselfies.decoder import Decoder as Decoder
+from metaselfies.encoder import Encoder as Encoder
+from metaselfies.metaselfies import decode, encode
 
-
-def main() -> None:
-    print("Hello from metaselfies!")
+__all__ = ["decode", "encode"]
