@@ -3,6 +3,7 @@ from metaselfies import Encoder, Decoder, Grammar
 from pathlib import Path
 from rdkit import Chem
 import pytest
+from tqdm import tqdm
 
 TESTDIR = Path(__file__).parent.resolve()
 SAMPLES = TESTDIR / "samples"
@@ -24,25 +25,21 @@ def test_roundtrip(path: Path):
     encoder = Encoder(grammar)
 
     with open(path) as fp:
-        line = fp.readline()  # skip header
-        while line:
-            if line.strip().startswith("#"):
-                line = fp.readline()
-                continue
+        lines = fp.readlines()
 
-            # run test case
-            in_smiles = line.strip()
-            in_selfies = sf.encoder(in_smiles)
+    for line in tqdm(lines[1:]):
+        # run test case
+        in_smiles = line.strip()
+        in_selfies = sf.encoder(in_smiles)
 
-            graph = decoder.decode(in_selfies)
-            metaselfies = encoder.encode(graph)
+        # selfies -> graph -> metaselfies
+        graph = decoder.decode(in_selfies)
+        metaselfies = encoder.encode(graph)
 
-            out_selfies = metaselfies
-            out_smiles = sf.decoder(out_selfies)
-            passed = check_mol(in_smiles, out_smiles)
-            assert passed, f"{in_smiles=}, {out_smiles=}"
-
-            line = fp.readline()
+        out_selfies = metaselfies
+        out_smiles = sf.decoder(out_selfies)
+        passed = check_mol(in_smiles, out_smiles)
+        assert passed, f"{in_smiles=}, {out_smiles=}"
 
 
 def check_mol(sma, smb):
