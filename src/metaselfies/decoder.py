@@ -1,12 +1,12 @@
-from metaselfies.instances import NodeInstance, EdgeInstance
 import logging
-from typing import List, Literal
+from typing import Literal
 
 from networkx import Graph
 from pydantic import BaseModel, Field
 
-from metaselfies.grammar import Grammar, TokenType, Structure, Node
-from metaselfies.tokenizer import tokenize, TokenInstance
+from metaselfies.grammar import Grammar, Node, Structure, TokenType
+from metaselfies.instances import EdgeInstance, NodeInstance
+from metaselfies.tokenizer import TokenInstance, tokenize
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

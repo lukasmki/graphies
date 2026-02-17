@@ -1,14 +1,10 @@
-import random
-from rich import print_json
-import json
+import logging
 from pathlib import Path
-import selfies as sf
-import metaselfies as msf
-import networkx as nx
 
+import selfies as sf
 from rdkit import Chem
 
-import logging
+import metaselfies as msf
 
 
 def compare_mol(sma, smb):

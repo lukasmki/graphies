@@ -1,8 +1,9 @@
-from pydantic import BaseModel
 import re
 from typing import Iterator, List, Pattern
 
-from metaselfies.grammar import Grammar, TokenType, Node, Structure, Edge, Modifier
+from pydantic import BaseModel
+
+from metaselfies.grammar import Edge, Grammar, Modifier, Node, Structure, TokenType
 
 TOKEN_RE: Pattern[str] = re.compile(pattern=r"\[[^\]]*\]|[^\[\]\s]")
 

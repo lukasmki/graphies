@@ -1,4 +1,5 @@
 import json
+import logging
 
 import networkx as nx
 import selfies as sf
@@ -8,8 +9,6 @@ from rich import print_json
 
 from metaselfies.decoder import Decoder
 from metaselfies.grammar import Grammar
-
-import logging
 
 logging.basicConfig(level=logging.DEBUG)
 

@@ -1,9 +1,11 @@
-import selfies as sf
-from metaselfies import Encoder, Decoder, Grammar
 from pathlib import Path
-from rdkit import Chem
+
 import pytest
+import selfies as sf
+from rdkit import Chem
 from tqdm import tqdm
+
+from metaselfies import Decoder, Encoder, Grammar
 
 TESTDIR = Path(__file__).parent.resolve()
 SAMPLES = TESTDIR / "samples"

@@ -1,7 +1,7 @@
-from metaselfies.utils import base16
-from pydantic import BaseModel
-from metaselfies.grammar import Node, Edge, Structure, Modifier, TokenType, Grammar
 from typing import Self
+
+from metaselfies.grammar import Edge, Grammar, Modifier, Node, Structure
+from metaselfies.utils import base16
 
 
 class NodeInstance(Node):

@@ -1,16 +1,15 @@
-from metaselfies.instances import (
-    NodeInstance,
-    EdgeInstance,
-    BranchInstance,
-    LinkInstance,
-)
-from metaselfies.utils import base16
 import logging
-from ase.atoms import default
-from typing import Iterator
+
 import networkx as nx
-from networkx.classes.digraph import Graph, DiGraph
+from networkx.classes.digraph import DiGraph, Graph
+
 from metaselfies.grammar import Grammar, TokenType
+from metaselfies.instances import (
+    BranchInstance,
+    EdgeInstance,
+    LinkInstance,
+    NodeInstance,
+)
 from metaselfies.tokenizer import TokenInstance
 
 logger = logging.getLogger(__name__)

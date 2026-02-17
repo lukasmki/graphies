@@ -1,6 +1,8 @@
-from networkx.classes.graph import Graph
-from metaselfies import Decoder, Encoder
 from pathlib import Path
+
+from networkx.classes.graph import Graph
+
+from metaselfies import Decoder, Encoder
 from metaselfies.grammar import Grammar
 
 
