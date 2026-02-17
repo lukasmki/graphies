@@ -103,9 +103,6 @@ class Encoder:
 
             tokens.extend(branch_prefix + branch_tokens)
 
-        # last child
-        tokens.extend(self.walk(graph, tree, children[-1], parent=node_id))
-
         # create links
         for link_id in links:
             if link_id < node_id:
@@ -127,5 +124,8 @@ class Encoder:
                         )
                     )
                 tokens.extend(link_tokens)
+
+        # last child
+        tokens.extend(self.walk(graph, tree, children[-1], parent=node_id))
 
         return tokens
