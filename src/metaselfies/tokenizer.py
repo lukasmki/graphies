@@ -1,9 +1,30 @@
+from pydantic import BaseModel
 import re
 from typing import Iterator, List, Pattern
 
-from metaselfies.grammar import Grammar, TokenInstance, TokenType
+from metaselfies.grammar import Grammar, TokenType, Node, Structure, Edge, Modifier
 
 TOKEN_RE: Pattern[str] = re.compile(pattern=r"\[[^\]]*\]|[^\[\]\s]")
+
+
+class TokenInstance(BaseModel):
+    type: TokenType
+    node: Node | Structure | None
+    edge: Edge | None
+    modifiers: list[Modifier]
+
+    @property
+    def symbol(self):
+        return self.serialize()
+
+    def serialize(self):
+        node_symbol = self.node.symbol if self.node is not None else ""
+        if (self.edge is None) or (self.edge.symbol == "*"):
+            edge_symbol = ""
+        else:
+            edge_symbol = self.edge.symbol
+        mods_symbol = "".join(m.symbol for m in self.modifiers)
+        return f"[{edge_symbol}{node_symbol}{mods_symbol}]"
 
 
 def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
@@ -47,7 +68,6 @@ def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
             yield [
                 TokenInstance(
                     type=TokenType.UNKNOWN,
-                    symbol=raw_token,
                     node=None,
                     edge=None,
                     modifiers=[],
@@ -99,7 +119,6 @@ def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
                 interpretations.append(
                     TokenInstance(
                         type=TokenType.NODE,
-                        symbol=raw_token,
                         node=node_lookup[base],
                         edge=edge,
                         modifiers=mods,
@@ -110,7 +129,6 @@ def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
                 interpretations.append(
                     TokenInstance(
                         type=TokenType.BRANCH,
-                        symbol=raw_token,
                         node=branch_lookup[base],
                         edge=edge,
                         modifiers=mods,
@@ -121,7 +139,6 @@ def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
                 interpretations.append(
                     TokenInstance(
                         type=TokenType.LINK,
-                        symbol=raw_token,
                         node=link_lookup[base],
                         edge=edge,
                         modifiers=mods,
@@ -138,7 +155,6 @@ def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
                 interpretations.append(
                     TokenInstance(
                         type=TokenType.INDEX,
-                        symbol=raw_token,
                         node=index_lookup[index_base],
                         edge=edge,
                         modifiers=mods,
@@ -154,7 +170,6 @@ def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
             yield [
                 TokenInstance(
                     type=TokenType.UNKNOWN,
-                    symbol=raw_token,
                     node=None,
                     edge=edge,
                     modifiers=[],

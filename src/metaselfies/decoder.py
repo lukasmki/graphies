@@ -1,11 +1,12 @@
+from metaselfies.instances import NodeInstance, EdgeInstance
 import logging
 from typing import List, Literal
 
 from networkx import Graph
 from pydantic import BaseModel, Field
 
-from metaselfies.grammar import Grammar, TokenInstance, TokenType, Structure, Node
-from metaselfies.tokenizer import tokenize
+from metaselfies.grammar import Grammar, TokenType, Structure, Node
+from metaselfies.tokenizer import tokenize, TokenInstance
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -14,20 +15,23 @@ logger.setLevel(logging.DEBUG)
 class PendingLink(BaseModel):
     source: int
     target: int
-    weight: int | float
+    edge: EdgeInstance
 
 
 class BranchState(BaseModel):
     source: int
     remaining: int
+    length: int
+    edge: EdgeInstance
 
 
-class IndexState(BaseModel):
+class IndexCounter(BaseModel):
     kind: Literal["branch", "link"]
     source: int
+    edge: EdgeInstance
+
     remaining: int
     value: int = 0
-    weight: int | float
 
     def consume(self, token: TokenInstance):
         assert isinstance(token.node, Structure)
@@ -38,11 +42,13 @@ class IndexState(BaseModel):
 
 class State(BaseModel):
     current_node: int | None = None
+    previous_node: int | None = None
+    current_token: int = 0
     remaining_degree: int | float = 0
 
     pending_links: list[PendingLink] = Field(default_factory=list)
     branch_stack: list[BranchState] = Field(default_factory=list)
-    index_stack: list[IndexState] = Field(default_factory=list)
+    index_stack: list[IndexCounter] = Field(default_factory=list)
 
     @property
     def expecting_index(self) -> bool:
@@ -63,35 +69,44 @@ class Decoder:
         # initialize state
         state = State()
         graph = Graph()
-        index = 0  # token index
         logger.debug("STATE INITIALIZED")
 
         for candidates in tokenize(data, self.grammar):
-            candidates: List[TokenInstance]
             token: TokenInstance = self.resolve_token(candidates, state)
             logger.debug(f"Resolved {token.symbol} to type {token.type}")
 
             # decrement all open branches
-            for i in range(len(state.branch_stack)):
-                state.branch_stack[i].remaining -= 1
+            for branch in state.branch_stack:
+                branch.remaining -= 1
+                branch.length += 1
 
             # handle token
             if token.type == TokenType.NODE:
-                self.handle_node(token, state, graph, index)
+                self.handle_node(token, state, graph)
             elif token.type == TokenType.BRANCH:
-                self.handle_branch(token, state, index)
+                self.handle_branch(token, state)
             elif token.type == TokenType.LINK:
-                self.handle_link(token, state, index)
+                self.handle_link(token, state)
             elif token.type == TokenType.INDEX:
-                self.handle_index(token, state, index)
+                self.handle_index(token, state)
             elif token.type == TokenType.UNKNOWN:
                 pass
             else:
                 raise ValueError("Unknown token type")
 
-            index += 1
+            # check to exit branch
+            if state.inside_branch:
+                branch = state.branch_stack[-1]
+                if branch.remaining == 0:
+                    logger.debug(f"Exiting branch with new root {branch.source}")
+                    state.previous_node = branch.source
+                    state.remaining_degree = graph.nodes[branch.source]["degree"]
+                    state.branch_stack.pop()
 
-        logger.debug("Resolving pending links")
+            # increment token number
+            state.current_token += 1
+
+        logger.debug("Resolving pending links...")
         self.resolve_links(state, graph)
 
         return graph
@@ -108,7 +123,7 @@ class Decoder:
                 if token.type == TokenType.INDEX:
                     return token
             else:
-                raise ValueError("Expected index token")
+                raise ValueError(f"Expected index token instead got {candidates}")
 
         # normal resolution
         nonindex = [t for t in candidates if t.type != TokenType.INDEX]
@@ -127,88 +142,121 @@ class Decoder:
             chosen = candidates[0]
         return chosen
 
-    def handle_node(self, token: TokenInstance, state: State, graph: Graph, index: int):
+    def handle_node(self, token: TokenInstance, state: State, graph: Graph):
         assert isinstance(token.node, Node)
         assert token.edge is not None
 
         # apply node modifiers
-        degree = token.node.max_degree
+        degree = token.node.degree
         for mod in token.modifiers:
             degree -= mod.weight
 
         # if first node
         if state.current_node is None:
-            graph.add_node(index, degree=degree, **token.model_dump())
-            state.current_node = index
+            state.current_node = 0
+
+            # add node
+            node = NodeInstance(
+                symbol=token.node.symbol,
+                data=token.node.data,
+                degree=degree,
+                modifiers=token.modifiers,
+            )
+            graph.add_node(state.current_node, **node.model_dump())
+            logger.debug(f"Added node {state.current_node} with degree {degree}")
+
+            # update state
+            state.previous_node = 0
+            state.current_node = 1
             state.remaining_degree = degree
-            logger.debug(f"Added node {index} with degree {degree}")
             return
 
-        edge_weight = min(token.edge.weight, degree, state.remaining_degree)
+        # compute edge weight
+        if state.inside_branch and state.branch_stack[-1].length == 0:
+            # if first in branch, use branch edge
+            edge_weight = state.branch_stack[-1].edge.weight
+        else:
+            edge_weight = token.edge.weight
+
+        edge_weight = min(edge_weight, degree, state.remaining_degree)
+        degree -= edge_weight
+
+        # add node
+        node = NodeInstance(
+            symbol=token.node.symbol,
+            data=token.node.data,
+            degree=degree,
+            modifiers=token.modifiers,
+        )
+        graph.add_node(state.current_node, **node.model_dump())
+        logger.debug(f"Added node {state.current_node} with degree {degree}")
+
+        # add edge
+        edge = EdgeInstance(
+            symbol=token.edge.symbol, weight=edge_weight, data=token.edge.data
+        )
+        graph.add_edge(state.previous_node, state.current_node, **edge.model_dump())
+        logger.debug(
+            f"Added edge from {state.current_node} to {state.previous_node} with weight {edge_weight}"
+        )
+
+        # update node degree
+        graph.nodes[state.previous_node]["degree"] -= edge_weight
+        logger.debug(
+            f"Updated node {state.previous_node} to degree {graph.nodes[state.previous_node]['degree']}"
+        )
 
         # update state
-        graph.add_node(index, degree=degree - edge_weight, **token.model_dump())
-        logger.debug(f"Added node {index} with degree {degree - edge_weight}")
+        state.previous_node = state.current_node
+        state.current_node = state.current_node + 1
+        state.remaining_degree = degree
 
-        graph.add_edge(state.current_node, index, weight=edge_weight)
-        logger.debug(
-            f"Added edge from {index} to {state.current_node} with weight {edge_weight}"
-        )
-
-        graph.nodes[state.current_node]["degree"] -= edge_weight
-        logger.debug(
-            f"Updated node {index} to degree {graph.nodes[state.current_node]['degree']}"
-        )
-
-        # check if exiting branch
-        if state.inside_branch:
-            branch = state.branch_stack[-1]
-            if branch.remaining == 0:
-                logger.debug(f"Exiting branch with new root {branch.source}")
-                state.current_node = branch.source
-                state.remaining_degree = graph.nodes[branch.source]["degree"]
-                state.branch_stack.pop()
-                return
-
-        state.current_node = index
-        state.remaining_degree = degree - edge_weight
-
-    def handle_branch(self, token: TokenInstance, state: State, index: int):
+    def handle_branch(self, token: TokenInstance, state: State):
         assert isinstance(token.node, Structure)
-        assert state.current_node is not None
+        assert state.previous_node is not None
         assert token.edge is not None
-
         logger.debug(f"Expecting {token.node.value} index token(s) for branch")
+
+        edge = EdgeInstance(
+            symbol=token.edge.symbol,
+            weight=token.edge.weight,
+            data=token.edge.data,
+        )
         state.index_stack.append(
-            IndexState(
+            IndexCounter(
                 kind="branch",
-                source=state.current_node,
+                source=state.previous_node,
                 remaining=token.node.value,
-                weight=token.edge.weight,
+                edge=edge,
             )
         )
 
-    def handle_link(self, token: TokenInstance, state: State, index: int):
+    def handle_link(self, token: TokenInstance, state: State):
         assert isinstance(token.node, Structure)
-        assert state.current_node is not None
+        assert state.previous_node is not None
         assert token.edge is not None
-
         logger.debug(f"Expecting {token.node.value} index token(s) for link")
+
+        edge = EdgeInstance(
+            symbol=token.edge.symbol,
+            weight=token.edge.weight,
+            data=token.edge.data,
+        )
         state.index_stack.append(
-            IndexState(
+            IndexCounter(
                 kind="link",
-                source=state.current_node,
+                source=state.previous_node,
                 remaining=token.node.value,
-                weight=token.edge.weight,
+                edge=edge,
             )
         )
 
-    def handle_index(self, token: TokenInstance, state: State, index: int):
+    def handle_index(self, token: TokenInstance, state: State):
         if len(state.index_stack) == 0:
             return
 
         # process index token
-        current: IndexState = state.index_stack[-1]
+        current: IndexCounter = state.index_stack[-1]
         current.consume(token)
         if current.remaining == 0:
             logger.debug(f"All index tokens consumed for {current.kind}")
@@ -218,6 +266,8 @@ class Decoder:
                     BranchState(
                         source=current.source,
                         remaining=current.value + 1,
+                        length=0,
+                        edge=current.edge,
                     )
                 )
             if current.kind == "link":
@@ -228,19 +278,21 @@ class Decoder:
                     PendingLink(
                         source=current.source,
                         target=current.source - current.value - 1,
-                        weight=current.weight,
+                        edge=current.edge,
                     )
                 )
             state.index_stack.pop()
 
     def resolve_links(self, state: State, graph: Graph):
         for link in state.pending_links:
-            print(graph.nodes)
             source_degree = graph.nodes[link.source]["degree"]
             target_degree = graph.nodes[link.target]["degree"]
-            link_weight = min(source_degree, target_degree, link.weight)
+            link_weight = min(source_degree, target_degree, link.edge.weight)
 
-            graph.add_edge(link.source, link.target, weight=link_weight)
+            edge_data = link.edge.model_dump()
+            edge_data.update({"weight": link_weight})
+
+            graph.add_edge(link.source, link.target, **edge_data)
             logger.debug(f"Added edge from {link.source} to {link.target}")
 
             graph.nodes[link.source]["degree"] -= link_weight

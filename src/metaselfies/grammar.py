@@ -18,45 +18,28 @@ class TokenType(str, Enum):
 
 class Node(BaseModel):
     symbol: str
-    max_degree: int | float
+    degree: int | float
     data: dict[str, Any] | None = None
 
 
 class Edge(BaseModel):
     symbol: str
     weight: int | float
+    data: dict[str, Any] | None = None
 
 
 class Modifier(BaseModel):
-    type: str
+    category: str
     symbol: str
     weight: int | float
-    allowed_nodes: list[str] | None = None
     data: dict[str, Any] | None = None
+    allowed_nodes: list[str] | None = None
     exceptions: dict[str, Any] | None = None
 
 
 class Structure(BaseModel):
     symbol: str
     value: int
-
-
-class TokenInstance(BaseModel):
-    type: TokenType
-    symbol: str
-    node: Node | Structure | None
-    edge: Edge | None
-    modifiers: list[Modifier]
-    idx: int | None = None
-
-    def serialize(self):
-        node_symbol = self.node.symbol if self.node is not None else ""
-        if (self.edge is None) or (self.edge.symbol == "*"):
-            edge_symbol = ""
-        else:
-            edge_symbol = self.edge.symbol
-        mods_symbol = "".join(m.symbol for m in self.modifiers)
-        return f"[{edge_symbol}{node_symbol}{mods_symbol}]"
 
 
 class Grammar(BaseModel):
@@ -92,9 +75,9 @@ class Grammar(BaseModel):
 
         for m in self.modifiers:
             if m.allowed_nodes is None:
-                by_type[m.type].append(m)
+                by_type[m.category].append(m)
             elif node_symbol in m.allowed_nodes:
-                by_type[m.type].append(m)
+                by_type[m.category].append(m)
 
         # allow "no modifier" per type
         groups: list[list[Modifier | None]] = [

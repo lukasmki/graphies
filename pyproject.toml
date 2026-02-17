@@ -1,7 +1,7 @@
 [project]
 name = "metaselfies"
 version = "0.1.0"
-description = "Add your description here"
+description = "tokenize any graph"
 readme = "README.md"
 authors = [
     { name = "lukasmki", email = "lukasarus@gmail.com" }
@@ -10,6 +10,7 @@ requires-python = ">=3.13"
 dependencies = [
     "molify>=0.2.2",
     "pydantic>=2.12.5",
+    "pytest>=9.0.2",
     "rdkit>=2025.9.3",
     "rich>=14.3.2",
     "selfies>=2.2.0",
@@ -17,6 +18,12 @@ dependencies = [
 
 [project.scripts]
 meta-selfies = "meta_selfies:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+log_cli = true
+log_cli_level = "WARNING"
+log_cli_format = "[%(levelname)s] %(name)s - %(message)s"
 
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]
