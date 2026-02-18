@@ -4,7 +4,7 @@ from pathlib import Path
 import selfies as sf
 from rdkit import Chem
 
-import metaselfies as msf
+import graphies as gf
 
 
 def compare_mol(sma, smb):
@@ -23,7 +23,7 @@ smiles = "CC(=O)C#C"
 smiles = "CC1CC1C"
 selfies = sf.encoder(smiles=smiles)
 print("SELFIES", selfies)
-graph = msf.decode(metaselfies=selfies, grammar=grammar)
+graph = gf.decode(graphies=selfies, grammar=grammar)
 
 for edge in graph.edges(data=True):
     print(edge)
@@ -33,8 +33,8 @@ for edge in graph.edges(data=True):
 # mapping = dict(zip(nids, shuffled))
 # graph = nx.relabel_nodes(graph, mapping, copy=True)
 
-metaselfies = msf.encode(graph=graph, grammar=grammar)
-print("METASELFIES", metaselfies)
-new_smiles = sf.decoder(metaselfies)
+graphies = gf.encode(graph=graph, grammar=grammar)
+print("GRAPHIES", graphies)
+new_smiles = sf.decoder(graphies)
 
 print("SMILES2SMILES", smiles, new_smiles, compare_mol(smiles, new_smiles))

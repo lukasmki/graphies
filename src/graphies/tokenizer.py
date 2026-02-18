@@ -3,7 +3,7 @@ from typing import Iterator, List, Pattern
 
 from pydantic import BaseModel
 
-from metaselfies.grammar import Edge, Grammar, Modifier, Node, Structure, TokenType
+from graphies.grammar import Edge, Grammar, Modifier, Node, Structure, TokenType
 
 TOKEN_RE: Pattern[str] = re.compile(pattern=r"\[[^\]]*\]|[^\[\]\s]")
 
@@ -30,7 +30,7 @@ class TokenInstance(BaseModel):
 
 def tokenize(text: str, grammar: Grammar) -> Iterator[List[TokenInstance]]:
     """
-    Streaming tokenizer for MetaSELFIES-style strings.
+    Streaming tokenizer for GRAPHIES-style strings.
 
     Parameters
     ----------

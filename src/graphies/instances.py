@@ -1,7 +1,7 @@
 from typing import Self
 
-from metaselfies.grammar import Edge, Grammar, Modifier, Node, Structure
-from metaselfies.utils import base16
+from graphies.grammar import Edge, Grammar, Modifier, Node, Structure
+from graphies.utils import base16
 
 
 class NodeInstance(Node):

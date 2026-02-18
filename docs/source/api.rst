@@ -1,7 +1,7 @@
 API Reference
 =============
 
-.. automodule:: metaselfies
+.. automodule:: graphies
    :members:
    :undoc-members:
    :show-inheritance:

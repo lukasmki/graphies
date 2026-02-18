@@ -1,7 +1,7 @@
-metaselfies
+GRAPHIES
 ===========
 
-``metaselfies`` is a Python library for representing graphs as token sequences.
+``graphies`` is a Python library for representing graphs as token sequences.
 
 
 .. toctree::

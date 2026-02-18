@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "metaselfies"
+project = "graphies"
 copyright = "2026, Lukas Kim"
 author = "Lukas Kim"
 release = "1.0.0"
@@ -33,7 +33,7 @@ autodoc_typehints = "description"
 html_theme = "furo"
 html_static_path = ["_static"]
 html_theme_options = {
-    "source_repository": "https://github.com/lukasmki/metaselfies/",
+    "source_repository": "https://github.com/lukasmki/graphies/",
     "source_branch": "main",
     "source_directory": "docs/source/",
 }

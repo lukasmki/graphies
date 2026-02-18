@@ -3,14 +3,14 @@ import logging
 import networkx as nx
 from networkx.classes.digraph import DiGraph, Graph
 
-from metaselfies.grammar import Grammar, TokenType
-from metaselfies.instances import (
+from graphies.grammar import Grammar, TokenType
+from graphies.instances import (
     BranchInstance,
     EdgeInstance,
     LinkInstance,
     NodeInstance,
 )
-from metaselfies.tokenizer import TokenInstance
+from graphies.tokenizer import TokenInstance
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

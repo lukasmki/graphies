@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-import metaselfies as msf
+import graphies as msf
 
 root = Path(__file__).parent.resolve()
 

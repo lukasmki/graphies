@@ -1,4 +1,4 @@
-from metaselfies.grammar import Grammar
+from graphies.grammar import Grammar
 
 
 def test_load_from_file():

@@ -1,15 +1,17 @@
-# metaselfies
+# GRAPHIES
+
+**GRAPH Indexed Embedded Strings**
 
 > [!WARNING]
 > Documentation under construction...
 
-A Python library for tokenizing arbitrary graph structures. Metaselfies extends [SELFIES](https://github.com/aspuru-guzik-group/selfies) to encode and decode any graph representation using a configurable grammar.
+A Python library for tokenizing arbitrary graph structures. `graphies` is a graph embedding language that can encode and decode any graph representation using a configurable grammar.
 
 ## Overview
 
-Metaselfies provides bidirectional conversion between:
+`graphies` provides bidirectional conversion between:
 - **Graphs** (networkx `Graph` objects)
-- **Strings** (metaselfies tokens)
+- **Strings** (graphies tokens)
 
 The encoding/decoding is governed by a **Grammar** that defines:
 - Node types and their maximum degree
@@ -23,34 +25,34 @@ The encoding/decoding is governed by a **Grammar** that defines:
 > This package will be published to PyPI once it's stable.
 
 ```bash
-pip install git+https://github.com/lukasmki/metaselfies.git
+pip install git+https://github.com/lukasmki/graphies.git
 ```
 
 <!-- ```bash
-pip install metaselfies
+pip install graphies
 ``` -->
 
 ## Quick Start
 
 ```python
 import networkx as nx
-from metaselfies import encode, decode
-from metaselfies.grammar import Grammar
+from graphies import encode, decode
+from graphies.grammar import Grammar
 
 # Load a grammar
 grammar = Grammar.from_file("path/to/grammar.json")
 
-# Encode a graph to metaselfies
+# Encode a graph to graphies
 graph = nx.Graph()
 graph.add_node(0, symbol="C", degree=4)
 graph.add_node(1, symbol="C", degree=4)
 graph.add_edge(0, 1, symbol="-", weight=1)
 
-metaselfies = encode(graph, grammar)
-print(metaselfies)  # Output: C-C
+graphies = encode(graph, grammar)
+print(graphies)  # Output: C-C
 
 # Decode back to graph
-decoded_graph = decode(metaselfies, grammar)
+decoded_graph = decode(graphies, grammar)
 ```
 
 ## Documentation
@@ -91,11 +93,11 @@ A grammar is defined in JSON format. See `examples/selfies.json` for the SELFIES
 ## CLI Usage
 
 ```bash
-metaselfies --help
+graphies --help
 ```
 
 ```bash
-python -m metaselfies --help
+python -m graphies --help
 ```
 
 ## Examples

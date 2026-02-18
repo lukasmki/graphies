@@ -1,5 +1,5 @@
 [project]
-name = "metaselfies"
+name = "graphies"
 version = "0.1.0"
 description = "tokenize any graph"
 readme = "README.md"
@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-metaselfies = "metaselfies.__main__:main"
+graphies = "graphies.__main__:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

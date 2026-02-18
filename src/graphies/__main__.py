@@ -5,11 +5,11 @@ from pathlib import Path
 
 import networkx as nx
 
-from metaselfies.metaselfies import decode, encode
+from graphies.graphies import decode, encode
 
 
 class Args(Namespace):
-    metaselfies_or_graph: str
+    graphies_or_graph: str
     grammar: Path
     encode: bool
     decode: bool
@@ -20,7 +20,7 @@ def main():
     parser.add_argument("-g", "--grammar", type=Path, required=True)
     parser.add_argument("--encode", action="store_true")
     parser.add_argument("--decode", action="store_true")
-    parser.add_argument("metaselfies_or_graph", nargs="?", type=str)
+    parser.add_argument("graphies_or_graph", nargs="?", type=str)
     args = parser.parse_args(namespace=Args())
 
     if args.encode and args.decode:
@@ -28,26 +28,26 @@ def main():
     if not (args.encode or args.decode):
         args.decode = True
 
-    if (args.metaselfies_or_graph is None) and (not sys.stdin.isatty()):
-        args.metaselfies_or_graph = sys.stdin.read()
-    elif args.metaselfies_or_graph is None:
+    if (args.graphies_or_graph is None) and (not sys.stdin.isatty()):
+        args.graphies_or_graph = sys.stdin.read()
+    elif args.graphies_or_graph is None:
         print("No input provided")
         sys.exit(1)
 
     if args.decode:
-        input = args.metaselfies_or_graph.splitlines()
-        for metaselfies in input:
-            metaselfies = args.metaselfies_or_graph
-            graph = decode(metaselfies, grammar=args.grammar)
+        input = args.graphies_or_graph.splitlines()
+        for graphies in input:
+            graphies = args.graphies_or_graph
+            graph = decode(graphies, grammar=args.grammar)
             output = json.dumps(nx.node_link_data(graph))
             sys.stdout.write(output + "\n")
 
     if args.encode:
-        input = args.metaselfies_or_graph.splitlines()
+        input = args.graphies_or_graph.splitlines()
         for graph in input:
-            graph = nx.node_link_graph(json.loads(args.metaselfies_or_graph))
-            metaselfies = encode(graph, grammar=args.grammar)
-            sys.stdout.write(metaselfies + "\n")
+            graph = nx.node_link_graph(json.loads(args.graphies_or_graph))
+            graphies = encode(graph, grammar=args.grammar)
+            sys.stdout.write(graphies + "\n")
 
     sys.exit(0)
 

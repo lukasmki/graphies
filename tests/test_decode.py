@@ -1,6 +1,6 @@
 import selfies as sf
 
-from metaselfies import decode
+from graphies import decode
 
 
 def test_ring():

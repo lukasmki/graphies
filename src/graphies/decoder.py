@@ -4,9 +4,9 @@ from typing import Literal
 from networkx import Graph
 from pydantic import BaseModel, Field
 
-from metaselfies.grammar import Grammar, Node, Structure, TokenType
-from metaselfies.instances import EdgeInstance, NodeInstance
-from metaselfies.tokenizer import TokenInstance, tokenize
+from graphies.grammar import Grammar, Node, Structure, TokenType
+from graphies.instances import EdgeInstance, NodeInstance
+from graphies.tokenizer import TokenInstance, tokenize
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -60,18 +60,18 @@ class State(BaseModel):
 
 
 class Decoder:
-    """Decode metaselfies to networkx.Graph"""
+    """Decode graphies to networkx.Graph"""
 
     def __init__(self, grammar: Grammar):
         self.grammar: Grammar = grammar
 
-    def decode(self, data: str) -> Graph:
+    def decode(self, text: str) -> Graph:
         # initialize state
         state = State()
         graph = Graph()
         logger.debug("STATE INITIALIZED")
 
-        for candidates in tokenize(data, self.grammar):
+        for candidates in tokenize(text, self.grammar):
             token: TokenInstance = self.resolve_token(candidates, state)
             logger.debug(f"Resolved {token.symbol} to type {token.type}")
 
