@@ -102,15 +102,19 @@ class Grammar(BaseModel):
         for edge in self.edges:
             edge_symbol = edge.symbol if edge.symbol != "*" else ""
             for branch in self.branches:
-                alphabet[f"{edge_symbol}{branch.symbol}"] = i
-                i += 1
+                symbol = f"{edge_symbol}{branch.symbol}"
+                if symbol not in alphabet:
+                    alphabet[symbol] = i
+                    i += 1
 
         # link symbols
         for edge in self.edges:
             edge_symbol = edge.symbol if edge.symbol != "*" else ""
             for link in self.links:
-                alphabet[f"{edge_symbol}{link.symbol}"] = i
-                i += 1
+                symbol = f"{edge_symbol}{link.symbol}"
+                if symbol not in alphabet:
+                    alphabet[symbol] = i
+                    i += 1
 
         # node symbols
         for edge in self.edges:
@@ -119,10 +123,14 @@ class Grammar(BaseModel):
                 if node.symbol == "*":
                     continue
                 base = f"{edge_symbol}{node.symbol}"
-                alphabet[base] = i
-                i += 1
+                if base not in alphabet:
+                    alphabet[base] = i
+                    i += 1
                 for mods in self.modifier_combinations(node.symbol):
                     suffix = "".join(m.symbol for m in mods)
-                    alphabet[f"{base}{suffix}"] = i
-                    i += 1
+                    symbol = f"{base}{suffix}"
+                    if symbol not in alphabet:
+                        alphabet[symbol] = i
+                        i += 1
+
         return alphabet
