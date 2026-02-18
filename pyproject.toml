@@ -29,3 +29,12 @@ log_cli_format = "[%(levelname)s] %(name)s - %(message)s"
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "furo>=2025.12.19",
+    "myst-parser>=5.0.0",
+    "ruff>=0.15.1",
+    "sphinx>=9.1.0",
+    "sphinx-autodoc-typehints>=3.6.3",
+]
