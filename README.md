@@ -1,6 +1,7 @@
 # metaselfies
 
-> [!WARNING] Documentation under construction...
+> [!WARNING]
+> Documentation under construction...
 
 A Python library for tokenizing arbitrary graph structures. Metaselfies extends [SELFIES](https://github.com/aspuru-guzik-group/selfies) to encode and decode any graph representation using a configurable grammar.
 
