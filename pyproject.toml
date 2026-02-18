@@ -1,20 +1,15 @@
 [project]
 name = "graphies"
 version = "0.1.0"
-description = "tokenize any graph"
+description = "GRAPH Indexed Embedded Strings"
 readme = "README.md"
 authors = [
     { name = "lukasmki", email = "lukasarus@gmail.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "molify>=0.2.2",
+    "networkx>=3.6.1",
     "pydantic>=2.12.5",
-    "pytest>=9.0.2",
-    "rdkit>=2025.9.3",
-    "rich>=14.3.2",
-    "selfies>=2.2.0",
-    "tqdm>=4.67.3",
 ]
 
 [project.scripts]
@@ -37,4 +32,9 @@ dev = [
     "ruff>=0.15.1",
     "sphinx>=9.1.0",
     "sphinx-autodoc-typehints>=3.6.3",
+    "rdkit>=2025.9.3",
+    "tqdm>=4.67.3",
+    "selfies>=2.2.0",
+    "molify>=0.2.2",
+    "pytest>=9.0.2",
 ]
