@@ -1,7 +1,8 @@
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel
 
 
 class TokenType(str, Enum):
@@ -13,24 +14,18 @@ class TokenType(str, Enum):
 
 
 class Node(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
     symbol: str
     degree: int | float
     data: dict[str, Any] | None = None
 
 
 class Edge(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
     symbol: str
     weight: int | float
     data: dict[str, Any] | None = None
 
 
 class Modifier(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
     category: str
     symbol: str
     weight: int | float
@@ -40,17 +35,16 @@ class Modifier(BaseModel):
 
 
 class Structure(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
     symbol: str
     value: int
 
 
-class TokenInstance(BaseModel):
+@dataclass
+class TokenInstance:
     type: TokenType = TokenType.UNKNOWN
     node: Node | Structure | None = None
     edge: Edge | None = None
-    modifiers: list[Modifier] = Field(default_factory=list)
+    modifiers: list[Modifier] = field(default_factory=list)
 
     @property
     def symbol(self):
@@ -71,6 +65,7 @@ class TokenInstance(BaseModel):
             edge_symbol = self.edge.symbol
 
         mods_symbol = "".join(m.symbol for m in self.modifiers)
+
         return f"[{edge_symbol}{self.node.symbol}{mods_symbol}]"
 
 

@@ -4,7 +4,14 @@ import networkx as nx
 from networkx import DiGraph, Graph
 
 from graphies.grammar import Grammar
-from graphies.instances import EdgeInstance, NodeInstance, TokenInstance, TokenType
+from graphies.instances import (
+    BranchInstance,
+    EdgeInstance,
+    LinkInstance,
+    NodeInstance,
+    TokenInstance,
+    TokenType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +34,16 @@ class Encoder:
         mapping = dict(zip(graph.nodes(), range(graph.order())))
         graph = nx.relabel_nodes(graph, mapping, copy=True)
 
+        self.grammar.default_node.model_dump()
         # for node, data in graph.nodes.items():
         #     print(node, data)
+        #     graph.nodes[node].clear()
+        #     graph.nodes[node]['node'] = NodeInstance(**data)
 
         # for edge, data in graph.edges.items():
         #     print(edge, data)
+        #     graph.edges[edge].clear()
+        #     graph.edges[edge]['edge'] = EdgeInstance(**data)
         return graph
 
     def walk(
@@ -40,9 +52,9 @@ class Encoder:
         tokens: list[TokenInstance] = []
 
         # add node
-        node = NodeInstance.model_validate(graph.nodes[node_id])
+        node = NodeInstance(**graph.nodes[node_id])
         if parent is not None:
-            edge = EdgeInstance.model_validate(graph.get_edge_data(node_id, parent))
+            edge = EdgeInstance(**graph.get_edge_data(node_id, parent))
         else:
             edge = None
         token = TokenInstance(
@@ -50,6 +62,7 @@ class Encoder:
         )
         tokens.append(token)
 
+        # get non-tree edges to current node
         neighbors = list(graph.neighbors(node_id))
         children = list(tree.successors(node_id))
         ancestors = list(tree.predecessors(node_id))
@@ -59,24 +72,17 @@ class Encoder:
             # create links
             for link_id in links:
                 if link_id < node_id:
-                    edge = EdgeInstance.model_validate(
-                        graph.get_edge_data(node_id, link_id)
+                    edge = EdgeInstance(**graph.get_edge_data(node_id, link_id))
+                    link: LinkInstance = self.grammar.get_link(
+                        distance=node_id - link_id
                     )
-                    link = self.grammar.get_link(distance=node_id - link_id)
 
                     link_tokens = [
-                        TokenInstance(
-                            type=TokenType.LINK, node=link, edge=edge, modifiers=[]
-                        )
+                        TokenInstance(type=TokenType.LINK, node=link, edge=edge)
                     ]
                     for index in link.indices:
                         link_tokens.append(
-                            TokenInstance(
-                                type=TokenType.INDEX,
-                                node=index,
-                                edge=None,
-                                modifiers=[],
-                            )
+                            TokenInstance(type=TokenType.INDEX, node=index)
                         )
                     tokens.extend(link_tokens)
 
@@ -84,46 +90,48 @@ class Encoder:
 
         for child in children[:-1]:
             # branch
-            edge = EdgeInstance.model_validate(graph.get_edge_data(node_id, child))
+            edge = EdgeInstance(**graph.get_edge_data(node_id, child))
 
-            branch_tokens = self.walk(graph, tree, child, parent=node_id)
-            branch = self.grammar.get_branch(size=len(branch_tokens))
+            branch_tokens: list[TokenInstance] = self.walk(
+                graph, tree, child, parent=node_id
+            )
+            branch: BranchInstance = self.grammar.get_branch(size=len(branch_tokens))
 
             branch_prefix = [
-                TokenInstance(
-                    type=TokenType.BRANCH, node=branch, edge=edge, modifiers=[]
-                )
+                TokenInstance(type=TokenType.BRANCH, node=branch, edge=edge)
             ]
             for index in branch.indices:
-                branch_prefix.append(
-                    TokenInstance(
-                        type=TokenType.INDEX, node=index, edge=None, modifiers=[]
-                    )
-                )
+                branch_prefix.append(TokenInstance(type=TokenType.INDEX, node=index))
 
             tokens.extend(branch_prefix + branch_tokens)
 
         # create links
         for link_id in links:
             if link_id < node_id:
-                edge = EdgeInstance.model_validate(
-                    graph.get_edge_data(node_id, link_id)
-                )
-                link = self.grammar.get_link(distance=node_id - link_id)
-                link_tokens = [
-                    TokenInstance(
-                        type=TokenType.LINK, node=link, edge=edge, modifiers=[]
-                    )
-                ]
+                edge = EdgeInstance(**graph.get_edge_data(node_id, link_id))
+                link: LinkInstance = self.grammar.get_link(distance=node_id - link_id)
+                link_tokens = [TokenInstance(type=TokenType.LINK, node=link, edge=edge)]
                 for index in link.indices:
-                    link_tokens.append(
-                        TokenInstance(
-                            type=TokenType.INDEX, node=index, edge=None, modifiers=[]
-                        )
-                    )
+                    link_tokens.append(TokenInstance(type=TokenType.INDEX, node=index))
                 tokens.extend(link_tokens)
 
         # last child
         tokens.extend(self.walk(graph, tree, children[-1], parent=node_id))
 
+        return tokens
+
+    def create_link(self, graph, links):
+        tokens = []
+
+        for link_id in links:
+            if link_id < node_id:
+                edge = EdgeInstance(**graph.get_edge_data(node_id, link_id))
+                link: LinkInstance = self.grammar.get_link(distance=node_id - link_id)
+                link_tokens = [
+                    TokenInstance(type=TokenType.LINK, node=link, edge=edge)
+                ] + [
+                    TokenInstance(type=TokenType.INDEX, node=index)
+                    for index in link.indices
+                ]
+                tokens.extend(link_tokens)
         return tokens

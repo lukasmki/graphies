@@ -6,7 +6,7 @@ from itertools import product
 from pathlib import Path
 from typing import Iterable, Iterator, Pattern, Self
 
-from pydantic import BaseModel, ConfigDict, PrivateAttr
+from pydantic import BaseModel, PrivateAttr
 
 from graphies.instances import (
     BranchInstance,
@@ -22,8 +22,6 @@ from graphies.utils import TokenTrie, base16
 
 
 class Grammar(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
     nodes: list[Node]
     edges: list[Edge]
     index: list[Structure]
@@ -34,13 +32,30 @@ class Grammar(BaseModel):
     _trie: TokenTrie = PrivateAttr()
     _edge_lookup: dict[str, Edge] = PrivateAttr()
     _node_lookup: dict[str, Node] = PrivateAttr()
+    _link_lookup: dict[int, list[Structure]] = PrivateAttr()
+    _index_lookup: dict[int, list[Structure]] = PrivateAttr()
+    _branch_lookup: dict[int, list[Structure]] = PrivateAttr()
 
     def model_post_init(self, ctx: object):
         self._build_lookup()
 
     def _build_lookup(self):
+        # symbol-based lookups
         self._edge_lookup = {e.symbol: e for e in self.edges}
         self._node_lookup = {n.symbol: n for n in self.nodes}
+
+        # value-based lookups
+        self._link_lookup = {}
+        self._index_lookup = {}
+        self._branch_lookup = {}
+        for link in self.links:
+            self._link_lookup.setdefault(link.value, []).append(link)
+        for index in self.index:
+            self._index_lookup.setdefault(index.value, []).append(index)
+        for branch in self.branches:
+            self._branch_lookup.setdefault(branch.value, []).append(branch)
+
+        # token prefix tree
         self._trie = TokenTrie(
             unknown=TokenInstance(
                 type=TokenType.UNKNOWN, node=None, edge=None, modifiers=[]
@@ -104,16 +119,12 @@ class Grammar(BaseModel):
 
         indices = []
         for digit in digits:
-            for index in self.index:
-                if index.value == digit:
-                    indices.append(index)
-                    break
-            else:
+            index = self._index_lookup.get(digit, None)
+            if index is None:
                 raise ValueError(f"Could not find index token for digit {digit}")
+            indices.append(index[0])
 
-        return BranchInstance.model_construct(
-            symbol=symbol, value=len(digits), indices=indices
-        )
+        return BranchInstance(symbol=symbol, value=len(digits), indices=indices)
 
     def get_link(self, distance: int) -> LinkInstance:
         "Get a LinkInstance from the node distance between the source and the target"
@@ -128,16 +139,12 @@ class Grammar(BaseModel):
 
         indices = []
         for digit in digits:
-            for index in self.index:
-                if index.value == digit:
-                    indices.append(index)
-                    break
-            else:
+            index = self._index_lookup.get(digit, None)
+            if index is None:
                 raise ValueError(f"Could not find index token for digit {digit}")
+            indices.append(index[0])
 
-        return LinkInstance.model_construct(
-            symbol=symbol, value=len(digits), indices=indices
-        )
+        return LinkInstance(symbol=symbol, value=len(digits), indices=indices)
 
     def modifier_combinations(self, node_symbol: str) -> Iterable[list[Modifier]]:
         by_type: dict[str, list[Modifier]] = defaultdict(list)

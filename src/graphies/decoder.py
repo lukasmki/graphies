@@ -1,8 +1,8 @@
 import logging
+from dataclasses import dataclass, field
 from typing import Literal
 
 from networkx import Graph
-from pydantic import BaseModel, Field
 
 from graphies.grammar import Grammar
 from graphies.instances import (
@@ -17,20 +17,23 @@ from graphies.instances import (
 logger = logging.getLogger(__name__)
 
 
-class PendingLink(BaseModel):
+@dataclass
+class PendingLink:
     source: int
     target: int
     edge: EdgeInstance
 
 
-class BranchState(BaseModel):
+@dataclass
+class BranchState:
     source: int
     remaining: int
     length: int
     edge: EdgeInstance
 
 
-class IndexCounter(BaseModel):
+@dataclass
+class IndexCounter:
     kind: Literal["branch", "link"]
     source: int
     edge: EdgeInstance
@@ -39,21 +42,23 @@ class IndexCounter(BaseModel):
     value: int = 0
 
     def consume(self, token: TokenInstance):
-        assert isinstance(token.node, Structure)
+        if logger.isEnabledFor(logging.DEBUG):
+            assert isinstance(token.node, Structure)
         digit = token.node.value
         self.value = (self.value << 4) + digit
         self.remaining -= 1
 
 
-class State(BaseModel):
+@dataclass
+class State:
     current_node: int | None = None
     previous_node: int | None = None
     current_token: int = 0
     remaining_degree: int | float = 0
 
-    pending_links: list[PendingLink] = Field(default_factory=list)
-    branch_stack: list[BranchState] = Field(default_factory=list)
-    index_stack: list[IndexCounter] = Field(default_factory=list)
+    pending_links: list[PendingLink] = field(default_factory=list)
+    branch_stack: list[BranchState] = field(default_factory=list)
+    index_stack: list[IndexCounter] = field(default_factory=list)
 
     @property
     def expecting_index(self) -> bool:
@@ -152,8 +157,9 @@ class Decoder:
         return chosen
 
     def handle_node(self, token: TokenInstance, state: State, graph: Graph):
-        assert isinstance(token.node, Node)
-        assert token.edge is not None
+        if logger.isEnabledFor(logging.DEBUG):
+            assert isinstance(token.node, Node)
+            assert token.edge is not None
 
         # apply node modifiers
         degree = token.node.degree
