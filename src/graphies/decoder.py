@@ -4,12 +4,17 @@ from typing import Literal
 from networkx import Graph
 from pydantic import BaseModel, Field
 
-from graphies.grammar import Grammar, Node, Structure, TokenType
-from graphies.instances import EdgeInstance, NodeInstance
-from graphies.tokenizer import TokenInstance, tokenize
+from graphies.grammar import Grammar
+from graphies.instances import (
+    EdgeInstance,
+    Node,
+    NodeInstance,
+    Structure,
+    TokenInstance,
+    TokenType,
+)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class PendingLink(BaseModel):
@@ -69,11 +74,13 @@ class Decoder:
         # initialize state
         state = State()
         graph = Graph()
-        logger.debug("STATE INITIALIZED")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("STATE INITIALIZED")
 
-        for candidates in tokenize(text, self.grammar):
+        for candidates in self.grammar.tokenize(text):
             token: TokenInstance = self.resolve_token(candidates, state)
-            logger.debug(f"Resolved {token.symbol} to type {token.type}")
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Resolved {token.symbol} to type {token.type}")
 
             # decrement all open branches
             for branch in state.branch_stack:
@@ -98,15 +105,17 @@ class Decoder:
             if state.inside_branch:
                 branch = state.branch_stack[-1]
                 if branch.remaining == 0:
-                    logger.debug(f"Exiting branch with new root {branch.source}")
                     state.previous_node = branch.source
                     state.remaining_degree = graph.nodes[branch.source]["degree"]
                     state.branch_stack.pop()
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(f"Exiting branch with new root {branch.source}")
 
             # increment token number
             state.current_token += 1
 
-        logger.debug("Resolving pending links...")
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Resolving pending links...")
         self.resolve_links(state, graph)
 
         return graph
@@ -163,7 +172,8 @@ class Decoder:
                 modifiers=token.modifiers,
             )
             graph.add_node(state.current_node, **node.model_dump())
-            logger.debug(f"Added node {state.current_node} with degree {degree}")
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Added node {state.current_node} with degree {degree}")
 
             # update state
             state.previous_node = 0
@@ -189,22 +199,24 @@ class Decoder:
             modifiers=token.modifiers,
         )
         graph.add_node(state.current_node, **node.model_dump())
-        logger.debug(f"Added node {state.current_node} with degree {degree}")
 
         # add edge
         edge = EdgeInstance(
             symbol=token.edge.symbol, weight=edge_weight, data=token.edge.data
         )
         graph.add_edge(state.previous_node, state.current_node, **edge.model_dump())
-        logger.debug(
-            f"Added edge from {state.current_node} to {state.previous_node} with weight {edge_weight}"
-        )
 
         # update node degree
         graph.nodes[state.previous_node]["degree"] -= edge_weight
-        logger.debug(
-            f"Updated node {state.previous_node} to degree {graph.nodes[state.previous_node]['degree']}"
-        )
+
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Added node {state.current_node} with degree {degree}")
+            logger.debug(
+                f"Added edge from {state.current_node} to {state.previous_node} with weight {edge_weight}"
+            )
+            logger.debug(
+                f"Updated node {state.previous_node} to degree {graph.nodes[state.previous_node]['degree']}"
+            )
 
         # update state
         state.previous_node = state.current_node
@@ -212,10 +224,11 @@ class Decoder:
         state.remaining_degree = degree
 
     def handle_branch(self, token: TokenInstance, state: State):
-        assert isinstance(token.node, Structure)
-        assert state.previous_node is not None
-        assert token.edge is not None
-        logger.debug(f"Expecting {token.node.value} index token(s) for branch")
+        if logger.isEnabledFor(logging.DEBUG):
+            assert isinstance(token.node, Structure)
+            assert state.previous_node is not None
+            assert token.edge is not None
+            logger.debug(f"Expecting {token.node.value} index token(s) for branch")
 
         edge = EdgeInstance(
             symbol=token.edge.symbol,
@@ -232,10 +245,11 @@ class Decoder:
         )
 
     def handle_link(self, token: TokenInstance, state: State):
-        assert isinstance(token.node, Structure)
-        assert state.previous_node is not None
-        assert token.edge is not None
-        logger.debug(f"Expecting {token.node.value} index token(s) for link")
+        if logger.isEnabledFor(logging.DEBUG):
+            assert isinstance(token.node, Structure)
+            assert state.previous_node is not None
+            assert token.edge is not None
+            logger.debug(f"Expecting {token.node.value} index token(s) for link")
 
         edge = EdgeInstance(
             symbol=token.edge.symbol,
@@ -259,9 +273,11 @@ class Decoder:
         current: IndexCounter = state.index_stack[-1]
         current.consume(token)
         if current.remaining == 0:
-            logger.debug(f"All index tokens consumed for {current.kind}")
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"All index tokens consumed for {current.kind}")
             if current.kind == "branch":
-                logger.debug(f"Expecting {current.value + 1} tokens for branch")
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(f"Expecting {current.value + 1} tokens for branch")
                 state.branch_stack.append(
                     BranchState(
                         source=current.source,
@@ -271,9 +287,10 @@ class Decoder:
                     )
                 )
             if current.kind == "link":
-                logger.debug(
-                    f"Queuing link between {current.source} and {current.source - current.value - 1}"
-                )
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        f"Queuing link between {current.source} and {current.source - current.value - 1}"
+                    )
                 state.pending_links.append(
                     PendingLink(
                         source=current.source,
@@ -293,14 +310,14 @@ class Decoder:
             edge_data.update({"weight": link_weight})
 
             graph.add_edge(link.source, link.target, **edge_data)
-            logger.debug(f"Added edge from {link.source} to {link.target}")
-
             graph.nodes[link.source]["degree"] -= link_weight
-            logger.debug(
-                f"Updated node {link.source} to degree {graph.nodes[link.source]['degree']}"
-            )
-
             graph.nodes[link.target]["degree"] -= link_weight
-            logger.debug(
-                f"Updated node {link.target} to degree {graph.nodes[link.target]['degree']}"
-            )
+
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Added edge from {link.source} to {link.target}")
+                logger.debug(
+                    f"Updated node {link.source} to degree {graph.nodes[link.source]['degree']}"
+                )
+                logger.debug(
+                    f"Updated node {link.target} to degree {graph.nodes[link.target]['degree']}"
+                )

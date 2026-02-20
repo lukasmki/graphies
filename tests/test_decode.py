@@ -6,7 +6,7 @@ from graphies import decode
 def test_ring():
     smiles = "c1ccccc1"
     selfies = sf.encoder(smiles)
-    graph = decode(selfies, grammar="examples/selfies.json")
+    graph = decode(selfies, grammar="tests/selfies.json")
     bonds = [
         (0, 1, {"weight": 2}),
         (0, 5, {"weight": 1}),
@@ -22,7 +22,7 @@ def test_ring():
 def test_branch():
     smiles = "C(C(C)C)C"
     selfies = sf.encoder(smiles)
-    graph = decode(selfies, grammar="examples/selfies.json")
+    graph = decode(selfies, grammar="tests/selfies.json")
     bonds = [
         (0, 1, {"weight": 1}),
         (0, 4, {"weight": 1}),
@@ -36,7 +36,7 @@ def test_branch():
 def test_ring_in_branch():
     smiles = "C1(CCC1)C"
     selfies = sf.encoder(smiles)
-    graph = decode(selfies, grammar="examples/selfies.json")
+    graph = decode(selfies, grammar="tests/selfies.json")
     bonds = [
         (0, 1, {"weight": 1}),
         (1, 2, {"weight": 1}),
@@ -51,7 +51,7 @@ def test_ring_in_branch():
 def test_ring_in_nestedbranch():
     smiles = "C1(CC(CC1))C"
     selfies = sf.encoder(smiles)
-    graph = decode(selfies, grammar="examples/selfies.json")
+    graph = decode(selfies, grammar="tests/selfies.json")
     bonds = [
         (0, 1, {"weight": 1}),
         (1, 2, {"weight": 1}),

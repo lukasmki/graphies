@@ -37,4 +37,5 @@ dev = [
     "selfies>=2.2.0",
     "molify>=0.2.2",
     "pytest>=9.0.2",
+    "pytest-benchmark>=5.2.3",
 ]

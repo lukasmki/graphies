@@ -1,40 +1,43 @@
 import logging
 
 import networkx as nx
-from networkx.classes.digraph import DiGraph, Graph
+from networkx import DiGraph, Graph
 
-from graphies.grammar import Grammar, TokenType
-from graphies.instances import (
-    BranchInstance,
-    EdgeInstance,
-    LinkInstance,
-    NodeInstance,
-)
-from graphies.tokenizer import TokenInstance
+from graphies.grammar import Grammar
+from graphies.instances import EdgeInstance, NodeInstance, TokenInstance, TokenType
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class Encoder:
     def __init__(self, grammar: Grammar):
-        self.grammar = grammar
+        self.grammar: Grammar = grammar
 
     def encode(self, graph: Graph) -> str:
-        # TODO: preprocess graph with grammar
+        # validate graph
+        graph = self.validate(graph)
 
-        # relabel nodes to token order
-        nodes = list(graph.nodes())
-        mapping = dict(zip(nodes, range(len(nodes))))
-        graph = nx.relabel_nodes(graph, mapping, copy=True)
+        # walk and build token sequence
         tree = nx.dfs_tree(graph, source=0, sort_neighbors=sorted)
         tokens = self.walk(graph, tree, node_id=0)
         return "".join([t.symbol for t in tokens])
 
+    def validate(self, graph: Graph):
+        # copy the graph and relabel nodes to node order
+        mapping = dict(zip(graph.nodes(), range(graph.order())))
+        graph = nx.relabel_nodes(graph, mapping, copy=True)
+
+        # for node, data in graph.nodes.items():
+        #     print(node, data)
+
+        # for edge, data in graph.edges.items():
+        #     print(edge, data)
+        return graph
+
     def walk(
         self, graph: Graph, tree: DiGraph, node_id: int, parent: int | None = None
-    ):
-        tokens = []
+    ) -> list[TokenInstance]:
+        tokens: list[TokenInstance] = []
 
         # add node
         node = NodeInstance.model_validate(graph.nodes[node_id])
@@ -59,9 +62,8 @@ class Encoder:
                     edge = EdgeInstance.model_validate(
                         graph.get_edge_data(node_id, link_id)
                     )
-                    link = LinkInstance.from_distance(
-                        distance=node_id - link_id, grammar=self.grammar
-                    )
+                    link = self.grammar.get_link(distance=node_id - link_id)
+
                     link_tokens = [
                         TokenInstance(
                             type=TokenType.LINK, node=link, edge=edge, modifiers=[]
@@ -85,9 +87,8 @@ class Encoder:
             edge = EdgeInstance.model_validate(graph.get_edge_data(node_id, child))
 
             branch_tokens = self.walk(graph, tree, child, parent=node_id)
-            branch = BranchInstance.from_size(
-                size=len(branch_tokens), grammar=self.grammar
-            )
+            branch = self.grammar.get_branch(size=len(branch_tokens))
+
             branch_prefix = [
                 TokenInstance(
                     type=TokenType.BRANCH, node=branch, edge=edge, modifiers=[]
@@ -108,9 +109,7 @@ class Encoder:
                 edge = EdgeInstance.model_validate(
                     graph.get_edge_data(node_id, link_id)
                 )
-                link = LinkInstance.from_distance(
-                    distance=node_id - link_id, grammar=self.grammar
-                )
+                link = self.grammar.get_link(distance=node_id - link_id)
                 link_tokens = [
                     TokenInstance(
                         type=TokenType.LINK, node=link, edge=edge, modifiers=[]

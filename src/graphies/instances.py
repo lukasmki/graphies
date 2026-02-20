@@ -1,7 +1,77 @@
-from typing import Self
+from enum import Enum
+from typing import Any
 
-from graphies.grammar import Edge, Grammar, Modifier, Node, Structure
-from graphies.utils import base16
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class TokenType(str, Enum):
+    NODE = "NODE"
+    BRANCH = "BRANCH"
+    LINK = "LINK"
+    INDEX = "INDEX"
+    UNKNOWN = "UNKNOWN"
+
+
+class Node(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    symbol: str
+    degree: int | float
+    data: dict[str, Any] | None = None
+
+
+class Edge(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    symbol: str
+    weight: int | float
+    data: dict[str, Any] | None = None
+
+
+class Modifier(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    category: str
+    symbol: str
+    weight: int | float
+    data: dict[str, Any] | None = None
+    allowed_nodes: list[str] | None = None
+    exceptions: dict[str, Any] | None = None
+
+
+class Structure(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    symbol: str
+    value: int
+
+
+class TokenInstance(BaseModel):
+    type: TokenType = TokenType.UNKNOWN
+    node: Node | Structure | None = None
+    edge: Edge | None = None
+    modifiers: list[Modifier] = Field(default_factory=list)
+
+    @property
+    def symbol(self):
+        return self.serialize()
+
+    def serialize(self) -> str:
+        if (self.node is None) or (self.node.symbol == "*"):
+            raise ValueError(
+                f"Cannot serialize TokenInstance without node attribute {self}"
+            )
+
+        if self.type == TokenType.INDEX:
+            return f"[{self.node.symbol}]"
+
+        if (self.edge is None) or (self.edge.symbol == "*"):
+            edge_symbol = ""
+        else:
+            edge_symbol = self.edge.symbol
+
+        mods_symbol = "".join(m.symbol for m in self.modifiers)
+        return f"[{edge_symbol}{self.node.symbol}{mods_symbol}]"
 
 
 class NodeInstance(Node):
@@ -14,50 +84,6 @@ class EdgeInstance(Edge): ...
 class BranchInstance(Structure):
     indices: list[Structure]
 
-    @classmethod
-    def from_size(cls, size: int, grammar: Grammar) -> Self:
-        digits = base16(size - 1)
-
-        for branch in grammar.branches:
-            if branch.value == len(digits):
-                symbol = branch.symbol
-                break
-        else:
-            raise ValueError(f"Could not find branch token with length {len(digits)}")
-
-        indices = []
-        for digit in digits:
-            for index in grammar.index:
-                if index.value == digit:
-                    indices.append(index)
-                    break
-            else:
-                raise ValueError(f"Could not find index token for digit {digit}")
-
-        return cls.model_construct(symbol=symbol, value=len(digits), indices=indices)
-
 
 class LinkInstance(Structure):
     indices: list[Structure]
-
-    @classmethod
-    def from_distance(cls, distance: int, grammar: Grammar) -> Self:
-        digits = base16(distance - 1)
-
-        for link in grammar.links:
-            if link.value == len(digits):
-                symbol = link.symbol
-                break
-        else:
-            raise ValueError(f"Could not find branch token with length {len(digits)}")
-
-        indices = []
-        for digit in digits:
-            for index in grammar.index:
-                if index.value == digit:
-                    indices.append(index)
-                    break
-            else:
-                raise ValueError(f"Could not find index token for digit {digit}")
-
-        return cls.model_construct(symbol=symbol, value=len(digits), indices=indices)
