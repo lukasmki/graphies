@@ -110,12 +110,10 @@ class Grammar(BaseModel):
         "Get a BranchInstance from size of branch"
         digits = base16(size - 1)
 
-        for branch in self.branches:
-            if branch.value == len(digits):
-                symbol = branch.symbol
-                break
-        else:
+        branches = self._branch_lookup.get(len(digits), None)
+        if branches is None:
             raise ValueError(f"Could not find branch token with length {len(digits)}")
+        branch = branches[0]
 
         indices = []
         for digit in digits:
@@ -124,18 +122,16 @@ class Grammar(BaseModel):
                 raise ValueError(f"Could not find index token for digit {digit}")
             indices.append(index[0])
 
-        return BranchInstance(symbol=symbol, value=len(digits), indices=indices)
+        return BranchInstance(symbol=branch.symbol, value=branch.value, indices=indices)
 
     def get_link(self, distance: int) -> LinkInstance:
         "Get a LinkInstance from the node distance between the source and the target"
         digits = base16(distance - 1)
 
-        for link in self.links:
-            if link.value == len(digits):
-                symbol = link.symbol
-                break
-        else:
+        links = self._link_lookup.get(len(digits), None)
+        if links is None:
             raise ValueError(f"Could not find branch token with length {len(digits)}")
+        link = links[0]
 
         indices = []
         for digit in digits:
@@ -144,7 +140,7 @@ class Grammar(BaseModel):
                 raise ValueError(f"Could not find index token for digit {digit}")
             indices.append(index[0])
 
-        return LinkInstance(symbol=symbol, value=len(digits), indices=indices)
+        return LinkInstance(symbol=link.symbol, value=link.value, indices=indices)
 
     def modifier_combinations(self, node_symbol: str) -> Iterable[list[Modifier]]:
         by_type: dict[str, list[Modifier]] = defaultdict(list)
