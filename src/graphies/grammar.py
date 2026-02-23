@@ -161,12 +161,12 @@ class Grammar(BaseModel):
             if len(mods) > 0:
                 yield mods
 
-    def to_alphabet(self) -> dict[str, int]:
-        alphabet: dict[str, int] = {}
+    def to_vocab(self) -> dict[str, int]:
+        vocab: dict[str, int] = {}
         i = 0
         for token in self.all_tokens():
             symbol = token.serialize()
-            if symbol not in alphabet:
-                alphabet[symbol] = i
+            if symbol not in vocab:
+                vocab[symbol] = i
                 i += 1
-        return alphabet
+        return vocab
