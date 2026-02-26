@@ -146,6 +146,12 @@ class Grammar(BaseModel):
         by_type: dict[str, list[Modifier]] = defaultdict(list)
 
         for m in self.modifiers:
+            # check if explicitly not allowed
+            if m.disallowed_nodes is not None:
+                if node_symbol in m.disallowed_nodes:
+                    continue
+            
+            # then check if allowed
             if m.allowed_nodes is None:
                 by_type[m.category].append(m)
             elif node_symbol in m.allowed_nodes:

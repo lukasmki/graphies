@@ -32,6 +32,7 @@ class Modifier(BaseModel):
     data: dict[str, Any] | None = None
     allowed_nodes: list[str] | None = None
     exceptions: dict[str, Any] | None = None
+    disallowed_nodes: list[str] | None = None
 
 
 class Structure(BaseModel):
