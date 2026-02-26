@@ -8,10 +8,9 @@ from tqdm import tqdm
 from graphies import Decoder, Encoder, Grammar
 
 TESTDIR = Path(__file__).parent.resolve()
-SAMPLES = TESTDIR / "../samples"
 GRAMMAR = TESTDIR / "selfies.json"
 
-datasets = list(SAMPLES.glob("*.smi"))
+datasets = list(TESTDIR.glob("*.smi"))
 
 
 @pytest.mark.parametrize("path", datasets)
