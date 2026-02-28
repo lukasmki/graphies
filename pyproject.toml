@@ -21,6 +21,9 @@ log_cli = true
 log_cli_level = "WARNING"
 log_cli_format = "[%(levelname)s] %(name)s - %(message)s"
 
+[tool.ruff.lint]
+select = ["F", "I", "B", "UP", "SIM"]
+
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]
 build-backend = "uv_build"

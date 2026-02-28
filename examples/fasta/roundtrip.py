@@ -1,16 +1,18 @@
 from pathlib import Path
+
 import graphies as gf
 
-grammar = gf.Grammar.from_file(path=Path(__file__).parent.resolve()/"fasta.json")
+grammar = gf.Grammar.from_file(path=Path(__file__).parent.resolve() / "fasta.json")
 
 
 def encode_fasta(string: str):
     return "".join([f"[{c}]" for c in string])
 
+
 def decode_fasta(string: str):
     tokens = list(grammar.tokenize(string))
     ntokens = len(tokens)
-    
+
     result, i = "", 0
     token = tokens[i][0]
     while token:
@@ -22,6 +24,7 @@ def decode_fasta(string: str):
         i += 1
         token = tokens[i][0] if i < ntokens else None
     return result
+
 
 fasta = "TVKIGGQLKEALLDTGADDTVLEDINLPGKWKPKMIGGIGGFIKVKQYDQILIEICGKKAIGTVLVGPTPVNIIGRNMLTQIGCTLNFPISPIETVPVKLKPGMDGPKVKQWPLTEEKIKALTEICIXMEKEGKISKIGPENPYNTPIFAIKKKDSTKWRKLVDFRELNKRTQDFWEVQLGIPHPAGLKKKXSVTVLDVGDAYFSVPLDEDFRKYTAFTIPSTNNETPGIRYQYNVLPQGWKGSPAIFQSSMTKILEPFRSKNPEIIIYQYMDDLYVGSDLXIGQHRXKXEELRGHLLSWGFTTPDKKHQKEPPFLWMG"
 

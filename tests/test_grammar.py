@@ -3,7 +3,7 @@ from graphies.instances import TokenType
 
 
 def test_load_from_file():
-    grammar = Grammar.from_file("tests/selfies.json")
+    _ = Grammar.from_file("tests/selfies.json")
 
 
 def test_trie_search():

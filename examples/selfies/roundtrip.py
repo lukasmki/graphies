@@ -1,14 +1,18 @@
 from pathlib import Path
-import graphies as gf
+
 import selfies as sf
 from rdkit import Chem
+
+import graphies as gf
+
 
 def compare_mol(sma, smb):
     csma = Chem.CanonSmiles(sma)
     csmb = Chem.CanonSmiles(smb)
     return csma == csmb
 
-grammar = gf.Grammar.from_file(path=Path(__file__).parent.resolve()/"selfies.json")
+
+grammar = gf.Grammar.from_file(path=Path(__file__).parent.resolve() / "selfies.json")
 
 smiles = "c1ccccc1"
 print("SMILES", smiles)

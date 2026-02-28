@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from graphies.instances import TokenInstance
 
 
@@ -20,8 +18,8 @@ class _TrieNode:
     __slots__ = ("children", "values")
 
     def __init__(self):
-        self.children: Dict[str, _TrieNode] = {}
-        self.values: List[TokenInstance] = []
+        self.children: dict[str, _TrieNode] = {}
+        self.values: list[TokenInstance] = []
 
 
 class TokenTrie:
@@ -46,7 +44,7 @@ class TokenTrie:
 
         node.values.append(token)
 
-    def search(self, symbol: str) -> List[TokenInstance]:
+    def search(self, symbol: str) -> list[TokenInstance]:
         """
         Search for exact content match using its serialized symbol
         Returns list of TokenInstance or [unknown].

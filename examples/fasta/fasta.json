@@ -1,14 +1,14 @@
 {
     "nodes"    : [
-        {"symbol": "A", "degree": 2}, {"symbol": "B", "degree": 2}, {"symbol": "C", "degree": 2},
-        {"symbol": "D", "degree": 2}, {"symbol": "E", "degree": 2}, {"symbol": "F", "degree": 2},
-        {"symbol": "G", "degree": 2}, {"symbol": "H", "degree": 2}, {"symbol": "I", "degree": 2},
-        {"symbol": "J", "degree": 2}, {"symbol": "K", "degree": 2}, {"symbol": "L", "degree": 2},
-        {"symbol": "M", "degree": 2}, {"symbol": "N", "degree": 2}, {"symbol": "O", "degree": 2},
-        {"symbol": "P", "degree": 2}, {"symbol": "Q", "degree": 2}, {"symbol": "R", "degree": 2},
-        {"symbol": "S", "degree": 2}, {"symbol": "T", "degree": 2}, {"symbol": "U", "degree": 2},
-        {"symbol": "V", "degree": 2}, {"symbol": "W", "degree": 2}, {"symbol": "Y", "degree": 2},
-        {"symbol": "Z", "degree": 2}, {"symbol": "X", "degree": 2}, {"symbol": "-", "degree": 2},
+        {"symbol": "A", "degree": 4}, {"symbol": "B", "degree": 6}, {"symbol": "C", "degree": 5},
+        {"symbol": "D", "degree": 6}, {"symbol": "E", "degree": 6}, {"symbol": "F", "degree": 4},
+        {"symbol": "G", "degree": 4}, {"symbol": "H", "degree": 6}, {"symbol": "I", "degree": 4},
+        {"symbol": "J", "degree": 4}, {"symbol": "K", "degree": 5}, {"symbol": "L", "degree": 4},
+        {"symbol": "M", "degree": 5}, {"symbol": "N", "degree": 6}, {"symbol": "O", "degree": 8},
+        {"symbol": "P", "degree": 3}, {"symbol": "Q", "degree": 6}, {"symbol": "R", "degree": 5},
+        {"symbol": "S", "degree": 6}, {"symbol": "T", "degree": 6}, {"symbol": "U", "degree": 5},
+        {"symbol": "V", "degree": 4}, {"symbol": "W", "degree": 5}, {"symbol": "X", "degree": 6},
+        {"symbol": "Y", "degree": 6}, {"symbol": "Z", "degree": 6}, {"symbol": "-", "degree": 2},
         {"symbol": "*", "degree": 2}
     ],
     "edges"    : [

@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel
 
 
-class TokenType(str, Enum):
+class TokenType(StrEnum):
     NODE = "NODE"
     BRANCH = "BRANCH"
     LINK = "LINK"

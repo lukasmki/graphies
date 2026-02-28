@@ -25,7 +25,7 @@ def test_process():
             (5, 0, {"symbol": "-", "weight": 1}),
         ]
     )
-    graphies = encode(graph, grammar="tests/selfies.json")
+    _ = encode(graph, grammar="tests/selfies.json")
 
 
 def test_process_edges():
@@ -53,7 +53,7 @@ def test_process_edges():
             (5, 0, {"weight": 1}),
         ]
     )
-    graphies = encode(graph, grammar="tests/selfies.json")
+    _ = encode(graph, grammar="tests/selfies.json")
 
 
 def test_process_nodes():
@@ -78,4 +78,4 @@ def test_process_nodes():
             (5, 0, {"symbol": "-", "weight": 1}),
         ]
     )
-    graphies = encode(graph, grammar="tests/selfies.json")
+    _ = encode(graph, grammar="tests/selfies.json")

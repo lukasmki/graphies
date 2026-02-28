@@ -1,5 +1,6 @@
-from graphies import decode, encode
 import selfies as sf
+
+from graphies import decode, encode
 from graphies.grammar import Grammar
 
 GRAMMAR = Grammar.from_file("tests/selfies.json")
@@ -12,6 +13,7 @@ def test_roundtrip(benchmark):
     def decode_encode(selfies: str, grammar: Grammar):
         graph = decode(selfies, grammar)
         graphies = encode(graph, grammar)
+        return graphies
 
     benchmark(decode_encode, SELFIES, GRAMMAR)
 
@@ -27,11 +29,14 @@ def test_encode(benchmark):
 def test_decode_selfies(benchmark):
     benchmark(sf.decoder, SELFIES)
 
+
 def test_encode_selfies(benchmark):
     benchmark(sf.encoder, SMILES)
+
 
 def test_roundtrip_selfies(benchmark):
     def decode_encode(selfies: str):
         smiles = sf.decoder(selfies)
         selfies = sf.encoder(smiles)
+
     benchmark(decode_encode, SELFIES)

@@ -1,10 +1,11 @@
 import json
 import re
 from collections import defaultdict
+from collections.abc import Iterator
 from functools import cached_property
 from itertools import product
 from pathlib import Path
-from typing import Iterable, Iterator, Pattern, Self
+from re import Pattern
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -93,7 +94,7 @@ class Grammar(BaseModel):
                     yield token
 
     @classmethod
-    def from_file(cls, path: str | Path) -> Self:
+    def from_file(cls, path: str | Path) -> "Grammar":
         path = Path(path) if isinstance(path, str) else path
         data = json.loads(path.resolve().read_text())
         return cls.model_validate(data)
@@ -142,19 +143,16 @@ class Grammar(BaseModel):
 
         return LinkInstance(symbol=link.symbol, value=link.value, indices=indices)
 
-    def modifier_combinations(self, node_symbol: str) -> Iterable[list[Modifier]]:
+    def modifier_combinations(self, node_symbol: str) -> Iterator[list[Modifier]]:
         by_type: dict[str, list[Modifier]] = defaultdict(list)
 
         for m in self.modifiers:
             # check if explicitly not allowed
-            if m.disallowed_nodes is not None:
-                if node_symbol in m.disallowed_nodes:
-                    continue
-            
+            if m.disallowed_nodes is not None and node_symbol in m.disallowed_nodes:
+                continue
+
             # then check if allowed
-            if m.allowed_nodes is None:
-                by_type[m.category].append(m)
-            elif node_symbol in m.allowed_nodes:
+            if m.allowed_nodes is None or node_symbol in m.allowed_nodes:
                 by_type[m.category].append(m)
 
         # allow "no modifier" per type
