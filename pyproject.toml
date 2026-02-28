@@ -15,6 +15,12 @@ dependencies = [
 [project.scripts]
 graphies = "graphies.__main__:main"
 
+[project.optional-dependencies]
+predict = [
+    "datasets>=4.6.0",
+    "polars>=1.38.1",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 log_cli = true

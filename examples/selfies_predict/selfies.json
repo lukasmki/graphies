@@ -1,0 +1,61 @@
+{
+    "nodes"    : [
+        {"symbol": "H",  "degree": 1}, {"symbol": "F",  "degree": 1}, {"symbol": "Cl", "degree": 1},
+        {"symbol": "Br", "degree": 1}, {"symbol": "I",  "degree": 1}, {"symbol": "B",  "degree": 3},
+        {"symbol": "C",  "degree": 4}, {"symbol": "N",  "degree": 3}, {"symbol": "O",  "degree": 2},
+        {"symbol": "P",  "degree": 5}, {"symbol": "S",  "degree": 6}, {"symbol": "*",  "degree": 8}
+    ],
+    "edges"    : [
+        {"symbol": "-",  "weight": 1}, {"symbol": "=",  "weight": 2}, {"symbol": "#",  "weight": 3},
+        {"symbol": "/",  "weight": 1}, {"symbol": "\\", "weight": 1}, {"symbol": "*",  "weight": 1}
+    ],
+    "branches" : [
+        {"symbol": "Branch1", "value": 1}, {"symbol": "Branch2", "value": 2}, {"symbol": "Branch3", "value": 3},
+        {"symbol": "Branch4", "value": 4}
+    ],
+    "links"    : [
+        {"symbol": "Ring1", "value": 1}, {"symbol": "Ring2", "value": 2}, {"symbol": "Ring3", "value": 3},
+        {"symbol": "Ring4", "value": 4}
+    ],
+    "index"    : [
+        {"symbol": "C",        "value":  0}, {"symbol": "Ring1",    "value":  1}, {"symbol": "Ring2",    "value":  2},
+        {"symbol": "Branch1",  "value":  3}, {"symbol": "=Branch1", "value":  4}, {"symbol": "#Branch1", "value":  5},
+        {"symbol": "Branch2",  "value":  6}, {"symbol": "=Branch2", "value":  7}, {"symbol": "#Branch2", "value":  8},
+        {"symbol": "O",        "value":  9}, {"symbol": "N",        "value": 10}, {"symbol": "=N",       "value": 11},
+        {"symbol": "=C",       "value": 12}, {"symbol": "#C",       "value": 13}, {"symbol": "S",        "value": 14},
+        {"symbol": "P",        "value": 15}
+    ],
+    "modifiers": [
+        {
+            "symbol"       : "@",
+            "weight"       : 0,
+            "allowed_nodes": ["C", "P", "S"],
+            "data"         : {"chiral_order": 1},
+            "category"     : "chirality"
+        },
+        {
+            "symbol"       : "@@",
+            "weight"       : 0,
+            "allowed_nodes": ["C", "P", "S"],
+            "data"         : {"chiral_order": 2},
+            "category"     : "chirality"
+        },
+        { "symbol": "H1", "weight": 1, "allowed_nodes": ["C", "N", "O", "P", "S"], "category": "hydrogen" },
+        { "symbol": "H2", "weight": 2, "allowed_nodes": ["C", "N", "P"], "category": "hydrogen" },
+        { "symbol": "H3", "weight": 3, "allowed_nodes": ["N"], "category": "hydrogen" },
+        {
+            "symbol"       : "+1",
+            "weight"       : -1,
+            "allowed_nodes": ["B", "C", "N", "O", "P", "S"],
+            "exceptions"   : { "B": {"weight": 1}, "C": {"weight": 1}, "S": {"weight": 1}, "P": {"weight": 1} },
+            "category"     : "charge"
+        },
+        {
+            "symbol"       : "-1",
+            "weight"       : 1,
+            "allowed_nodes": ["C", "N", "O", "P", "S"],
+            "exceptions"   : { "B": {"weight": -1}, "C": {"weight": 1}, "S": {"weight": 1}, "P": {"weight": -1} },
+            "category"     : "charge"
+        }
+    ]
+}
