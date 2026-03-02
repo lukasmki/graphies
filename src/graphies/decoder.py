@@ -113,8 +113,8 @@ class Decoder:
                     state.previous_node = branch.source
                     state.remaining_degree = graph.nodes[branch.source]["degree"]
                     state.branch_stack.pop()
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.debug(f"Exiting branch with new root {branch.source}")
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug(f"Exiting branch with new root {branch.source}")
 
             # increment token number
             state.current_token += 1
@@ -122,6 +122,9 @@ class Decoder:
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("Resolving pending links...")
         self.resolve_links(state, graph)
+
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("DECODING DONE")
 
         return graph
 
@@ -137,7 +140,14 @@ class Decoder:
                 if token.type == TokenType.INDEX:
                     return token
             else:
-                raise ValueError(f"Expected index token instead got {candidates}")
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        f"Expected index token instead got types {[c.type for c in candidates]}"
+                    )
+                    logger.debug("Closing index counter and resolving normally")
+                # raise ValueError(f"Expected index token instead got types {[c.type for c in candidates]})
+                # remove index counter and resolve token normally
+                state.index_stack.pop()
 
         # normal resolution
         nonindex = [t for t in candidates if t.type != TokenType.INDEX]
@@ -195,9 +205,15 @@ class Decoder:
             edge_weight = token.edge.weight
 
         edge_weight = min(edge_weight, degree, state.remaining_degree)
-        degree -= edge_weight
+
+        # if adding a node is not possible
+        if edge_weight == 0:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(f"Maxmum degree reached")
+            return
 
         # add node
+        degree -= edge_weight
         node = NodeInstance(
             symbol=token.node.symbol,
             data=token.node.data,
@@ -207,9 +223,7 @@ class Decoder:
         graph.add_node(state.current_node, **node.model_dump())
 
         # add edge
-        edge = EdgeInstance(
-            symbol=token.edge.symbol, weight=edge_weight, data=token.edge.data
-        )
+        edge = self.grammar.get_edge(edge_weight)
         graph.add_edge(state.previous_node, state.current_node, **edge.model_dump())
 
         # update node degree
@@ -281,6 +295,8 @@ class Decoder:
         if current.remaining == 0:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(f"All index tokens consumed for {current.kind}")
+
+            # Create branch
             if current.kind == "branch":
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(f"Expecting {current.value + 1} tokens for branch")
@@ -292,6 +308,8 @@ class Decoder:
                         edge=current.edge,
                     )
                 )
+
+            # Queue link
             if current.kind == "link":
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(
@@ -308,15 +326,39 @@ class Decoder:
 
     def resolve_links(self, state: State, graph: Graph):
         for link in state.pending_links:
+            # catch invalid link source/destination
+            if link.source < 0 or link.target < 0:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        f"Attempted to create link {link.source} {link.target}. Continuing."
+                    )
+                continue
+            
+            # get pending link weight
             source_degree = graph.nodes[link.source]["degree"]
             target_degree = graph.nodes[link.target]["degree"]
             link_weight = min(source_degree, target_degree, link.edge.weight)
 
-            edge_data = link.edge.model_dump()
-            edge_data.update({"weight": link_weight})
+            # check if it would violate maximum degree
+            if link_weight == 0:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        f"Passing link {link.source} {link.target} that would exceed max degree {source_degree} {target_degree} {link.edge.weight}"
+                    )
+                continue
 
-            graph.add_edge(link.source, link.target, **edge_data)
-            graph.nodes[link.source]["degree"] -= link_weight
+            # get edge instance for link_weight
+            if graph.has_edge(link.source, link.target):
+                # add weight if an edge already exists
+                edge = self.grammar.get_edge(
+                    link_weight + graph.edges[link.source, link.target]["weight"]
+                )
+            else:
+                edge = self.grammar.get_edge(link_weight)
+
+            # Add edge and update node degrees
+            graph.add_edge(link.source, link.target, **edge.model_dump())
+            graph.nodes[link.source]["degree"] -= link_weight # update with link weight
             graph.nodes[link.target]["degree"] -= link_weight
 
             if logger.isEnabledFor(logging.DEBUG):

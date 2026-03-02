@@ -12,6 +12,7 @@ from pydantic import BaseModel, PrivateAttr
 from graphies.instances import (
     BranchInstance,
     Edge,
+    EdgeInstance,
     LinkInstance,
     Modifier,
     Node,
@@ -32,6 +33,7 @@ class Grammar(BaseModel):
 
     _trie: TokenTrie = PrivateAttr()
     _edge_lookup: dict[str, Edge] = PrivateAttr()
+    _edgeval_lookup: dict[float, list[Edge]] = PrivateAttr()
     _node_lookup: dict[str, Node] = PrivateAttr()
     _link_lookup: dict[int, list[Structure]] = PrivateAttr()
     _index_lookup: dict[int, list[Structure]] = PrivateAttr()
@@ -49,12 +51,15 @@ class Grammar(BaseModel):
         self._link_lookup = {}
         self._index_lookup = {}
         self._branch_lookup = {}
+        self._edgeval_lookup = {}
         for link in self.links:
             self._link_lookup.setdefault(link.value, []).append(link)
         for index in self.index:
             self._index_lookup.setdefault(index.value, []).append(index)
         for branch in self.branches:
             self._branch_lookup.setdefault(branch.value, []).append(branch)
+        for edge in self.edges:
+            self._edgeval_lookup.setdefault(edge.weight, []).append(edge)
 
         # token prefix tree
         self._trie = TokenTrie(
@@ -106,6 +111,21 @@ class Grammar(BaseModel):
     @cached_property
     def default_node(self) -> Node | None:
         return self._node_lookup.get("*")
+
+    def get_edge(self, weight: float) -> EdgeInstance:
+        "Get EdgeInstance from weight of edge"
+        if self.default_edge is not None and weight == self.default_edge.weight:
+            return EdgeInstance(
+                symbol=self.default_edge.symbol,
+                weight=self.default_edge.weight,
+                data=self.default_edge.data,
+            )
+
+        edges = self._edgeval_lookup.get(weight, None)
+        if edges is None:
+            raise ValueError(f"Could not find edge token with weight {weight}")
+        edge = edges[0]
+        return EdgeInstance(symbol=edge.symbol, weight=edge.weight, data=edge.data)
 
     def get_branch(self, size: int) -> BranchInstance:
         "Get a BranchInstance from size of branch"
