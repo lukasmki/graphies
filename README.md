@@ -69,6 +69,18 @@ print(graphies)  # Output: C-C
 decoded_graph = decode(graphies, grammar)
 ```
 
+## Citation
+
+```bibtex
+@software{Kim_Graphies_2025,
+  author = {Kim, Lukas},
+  title = {Graphies},
+  url = {https://github.com/lukasmki/graphies},
+  year = {2025},
+  version = {0.1},
+}
+```
+
 ## Documentation
 
 Build the documentation.
