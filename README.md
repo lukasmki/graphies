@@ -32,6 +32,20 @@ pip install git+https://github.com/lukasmki/graphies.git
 pip install graphies
 ``` -->
 
+### Predict Module
+
+To use the predict module install with the `predict` optional dependencies.
+
+```bash
+pip install 'graphies[predict] @ git+https://github.com/lukasmki/graphies.git'
+```
+
+or with `uv`
+
+```bash
+uv pip install --extra predict git+https://github.com/lukasmki/graphies.git
+```
+
 ## Quick Start
 
 ```python
