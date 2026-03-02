@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -20,8 +21,12 @@ def main():
     parser.add_argument("-g", "--grammar", type=Path, required=True)
     parser.add_argument("--encode", action="store_true")
     parser.add_argument("--decode", action="store_true")
+    parser.add_argument("--debug", action="store_true")
     parser.add_argument("graphies_or_graph", nargs="?", type=str)
     args = parser.parse_args(namespace=Args())
+
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
 
     if args.encode and args.decode:
         raise ValueError("Mutually exclusive arguments `--encode` and `--decode`")
