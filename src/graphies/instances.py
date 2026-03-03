@@ -71,7 +71,7 @@ class TokenInstance:
 
 
 class NodeInstance(Node):
-    modifiers: list[Modifier]
+    modifiers: list[Modifier] = field(default_factory=list)
 
 
 class EdgeInstance(Edge): ...

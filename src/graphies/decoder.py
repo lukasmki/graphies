@@ -80,7 +80,7 @@ class Decoder:
         state = State()
         graph = Graph()
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("STATE INITIALIZED")
+            logger.debug("STARTING DECODE")
 
         for candidates in self.grammar.tokenize(text):
             token: TokenInstance = self.resolve_token(candidates, state)
@@ -124,7 +124,7 @@ class Decoder:
         self.resolve_links(state, graph)
 
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("DECODING DONE")
+            logger.debug("FINISHED DECODE")
 
         return graph
 
@@ -209,7 +209,7 @@ class Decoder:
         # if adding a node is not possible
         if edge_weight == 0:
             if logger.isEnabledFor(logging.DEBUG):
-                logger.debug(f"Maxmum degree reached")
+                logger.debug("Maxmum degree reached")
             return
 
         # add node
@@ -333,7 +333,7 @@ class Decoder:
                         f"Attempted to create link {link.source} {link.target}. Continuing."
                     )
                 continue
-            
+
             # get pending link weight
             source_degree = graph.nodes[link.source]["degree"]
             target_degree = graph.nodes[link.target]["degree"]
@@ -358,7 +358,7 @@ class Decoder:
 
             # Add edge and update node degrees
             graph.add_edge(link.source, link.target, **edge.model_dump())
-            graph.nodes[link.source]["degree"] -= link_weight # update with link weight
+            graph.nodes[link.source]["degree"] -= link_weight  # update with link weight
             graph.nodes[link.target]["degree"] -= link_weight
 
             if logger.isEnabledFor(logging.DEBUG):
