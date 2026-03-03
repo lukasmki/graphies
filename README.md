@@ -50,8 +50,7 @@ uv pip install --extra predict git+https://github.com/lukasmki/graphies.git
 
 ```python
 import networkx as nx
-from graphies import encode, decode
-from graphies.grammar import Grammar
+from graphies import Grammar, encode, decode
 
 # Load a grammar
 grammar = Grammar.from_file("path/to/grammar.json")
@@ -63,10 +62,22 @@ graph.add_node(1, symbol="C", degree=4)
 graph.add_edge(0, 1, symbol="-", weight=1)
 
 graphies = encode(graph, grammar)
-print(graphies)  # Output: C-C
+print(graphies)  # Output: [C][C]
 
 # Decode back to graph
 decoded_graph = decode(graphies, grammar)
+```
+
+## Citation
+
+```bibtex
+@software{Kim_Graphies_2025,
+  author = {Kim, Lukas},
+  title = {Graphies},
+  url = {https://github.com/lukasmki/graphies},
+  year = {2025},
+  version = {0.1},
+}
 ```
 
 ## Documentation
