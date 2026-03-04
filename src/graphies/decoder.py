@@ -249,6 +249,11 @@ class Decoder:
             assert state.previous_node is not None
             assert token.edge is not None
             logger.debug(f"Expecting {token.node.value} index token(s) for branch")
+        
+        # if branch is the first token
+        if state.previous_node is None:
+            # don't do anything
+            return
 
         edge = EdgeInstance(
             symbol=token.edge.symbol,
