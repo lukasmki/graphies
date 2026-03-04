@@ -21,8 +21,9 @@ class Encoder:
         self.grammar: Grammar = grammar
         self.visited: list[int] = list()
 
-    def encode(self, graph: Graph, source=0) -> str:
+    def encode(self, graph: Graph, source=None) -> str:
         # walk and build token sequence
+        source = list(graph)[0] if source is None else source
         tree = nx.dfs_tree(graph, source=source, sort_neighbors=sorted)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("STARTING WALK")
@@ -94,15 +95,23 @@ class Encoder:
 
         return tokens
 
-    def create_link(self, graph, node_id, links):
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"Attempting to create link from {node_id} to {links}")
-
+    def create_link(self, graph: Graph, node_id, links):
         tokens = []
         for link_id in links:
-            if link_id in self.visited:
+            if link_id in self.visited and not graph.has_edge(node_id, link_id):
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        f"Attempting to create link from node {node_id} to node {link_id}"
+                    )
+
                 edge = EdgeInstance(**graph.get_edge_data(node_id, link_id))
                 distance = self.visited.index(node_id) - self.visited.index(link_id)
+                if distance < 0:
+                    raise ValueError(
+                        "Cannot create link with node distance < 0:"
+                        f"{distance} = {self.visited.index(node_id)} - {self.visited.index(link_id)}"
+                    )
+
                 link: LinkInstance = self.grammar.get_link(distance)
                 tokens.append(TokenInstance(type=TokenType.LINK, node=link, edge=edge))
                 tokens.extend(
