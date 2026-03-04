@@ -5,7 +5,11 @@ from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.utils.data import DataLoader, random_split
 
-from graphies.predict import CSVGraphiesDataset, GraphiesTokenizer, GraphiesTrainer
+from graphies.predict import (
+    CSVRandomizedGraphiesDataset,
+    GraphiesTokenizer,
+    GraphiesTrainer,
+)
 from graphies.predict.models import GRU
 
 root = Path(__file__).parent.resolve()
@@ -14,7 +18,7 @@ chk.mkdir(parents=True, exist_ok=True)
 
 
 tokenizer = GraphiesTokenizer.from_file(root / "selfies.json")
-dataset = CSVGraphiesDataset(root / "qm9.selfies.csv", "selfies", tokenizer)
+dataset = CSVRandomizedGraphiesDataset(root / "qm9.selfies.csv", "selfies", tokenizer)
 
 
 trn, tst = random_split(dataset, [0.9, 0.1])
