@@ -93,6 +93,5 @@ def test_case6():
     graph = decode(selfies, grammar="tests/selfies.json")
     graphies = encode(graph, grammar="tests/selfies.json")
     reference = sf.encoder(sf.decoder(selfies))
-    print(graphies, reference)
     assert reference == "[C][#S][=Branch1][C][=O][N]"
     assert graphies == "[C][=S][=Branch1][C][=O][=N]"
