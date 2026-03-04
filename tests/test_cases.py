@@ -15,6 +15,9 @@ def test_case1():
     between the previous atom and index = m - ([C] + 1) atom before it.
     Unless selfies has a special rule for this, it isn't consistent with
     the ring indexing.
+
+    NOTE: It's the inital link overshoot ([Ring2][N][O]) that is not passed that creates
+    the ring between [O] and index 0 [C], see test_case 7
     """
 
     selfies = "[C][C][C][O][Ring2][N][O][Ring1][C][Ring1][C]"
@@ -95,3 +98,20 @@ def test_case6():
     reference = sf.encoder(sf.decoder(selfies))
     assert reference == "[C][#S][=Branch1][C][=O][N]"
     assert graphies == "[C][=S][=Branch1][C][=O][=N]"
+
+def test_case7():
+    """Link resolution again, explaining test case 1
+    The first link [Ring2][O][C] results in an overshoot that selfies 
+    resolves as a link to node 0. Fixing this would confict with test case 1,
+    which passes the improperly indexed link. I see this most often like in this
+    case where there would never be a valid [Ring2] token in a small molecule (<255 nodes).
+    It only appears as an artifact since [Ring2] tokens are also used to index the number 3
+    and defining a set of dedicated index tokens would prevent these conficts. So, it
+    should just be passed as a malformed link and ignored rather than creating an implied
+    link to node 0. Same for the second link which indexes [O] 9 atoms before the [Ring1] token
+    """
+    selfies = "[C][O][C][Ring2][O][C][C][Ring1][O][C][F][C]"
+    reference = "[C][O][C][Ring1][Ring1][C][Ring1][Ring2][C][F]"
+    graph = decode(selfies, grammar="tests/selfies.json")
+    graphies = encode(graph, grammar="tests/selfies.json")
+    assert graphies == "[C][O][C][C][C][F]"
