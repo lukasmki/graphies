@@ -11,7 +11,7 @@ from graphies.grammar import Grammar
 
 class GraphiesTokenizer:
     def __init__(self, grammar: Grammar):
-        self.grammar = grammar
+        self.grammar: Grammar = grammar
         self.control: dict[str, int] = {
             "[NULL]": 0,
             "[BEGIN]": 1,
