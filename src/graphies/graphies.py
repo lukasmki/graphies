@@ -19,7 +19,7 @@ def decode(graphies: str, grammar: Grammar | str | Path) -> Graph:
     return graph
 
 
-def encode(graph: Graph, grammar: Grammar | str | Path) -> str:
+def encode(graph: Graph, grammar: Grammar | str | Path, source=None) -> str:
     if isinstance(grammar, str):
         grammar_path = Path(grammar).resolve()
         grammar = Grammar.model_validate_json(grammar_path.read_text())
@@ -27,5 +27,5 @@ def encode(graph: Graph, grammar: Grammar | str | Path) -> str:
         grammar = Grammar.model_validate_json(grammar.read_text())
 
     encoder = Encoder(grammar)
-    graphies = encoder.encode(graph)
+    graphies = encoder.encode(graph, source=source)
     return graphies
