@@ -187,7 +187,8 @@ class Decoder:
                 degree=degree,
                 modifiers=token.modifiers,
             )
-            graph.add_node(state.current_node, **node.model_dump())
+            mod_data = {k: v for m in node.modifiers for k, v in m.data.items()}
+            graph.add_node(state.current_node, **node.model_dump(), **node.data, **mod_data)
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(f"Added node {state.current_node} with degree {degree}")
 
@@ -220,11 +221,12 @@ class Decoder:
             degree=degree,
             modifiers=token.modifiers,
         )
-        graph.add_node(state.current_node, **node.model_dump())
+        mod_data = {k: v for m in node.modifiers for k, v in m.data.items()}
+        graph.add_node(state.current_node, **node.model_dump(), **node.data, **mod_data)
 
         # add edge
         edge = self.grammar.get_edge(edge_weight)
-        graph.add_edge(state.previous_node, state.current_node, **edge.model_dump())
+        graph.add_edge(state.previous_node, state.current_node, **edge.model_dump(), **edge.data)
 
         # update node degree
         graph.nodes[state.previous_node]["degree"] -= edge_weight
@@ -362,7 +364,7 @@ class Decoder:
                 edge = self.grammar.get_edge(link_weight)
 
             # Add edge and update node degrees
-            graph.add_edge(link.source, link.target, **edge.model_dump())
+            graph.add_edge(link.source, link.target, **edge.model_dump(), **edge.data)
             graph.nodes[link.source]["degree"] -= link_weight  # update with link weight
             graph.nodes[link.target]["degree"] -= link_weight
 

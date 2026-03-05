@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TokenType(StrEnum):
@@ -16,20 +16,20 @@ class TokenType(StrEnum):
 class Node(BaseModel):
     symbol: str
     degree: int | float
-    data: dict[str, Any] | None = None
+    data: dict[str, Any] = Field(default_factory=dict)
 
 
 class Edge(BaseModel):
     symbol: str
     weight: int | float
-    data: dict[str, Any] | None = None
+    data: dict[str, Any] = Field(default_factory=dict)
 
 
 class Modifier(BaseModel):
     category: str
     symbol: str
     weight: int | float
-    data: dict[str, Any] | None = None
+    data: dict[str, Any] = Field(default_factory=dict)
     allowed_nodes: list[str] | None = None
     exceptions: dict[str, Any] | None = None
     disallowed_nodes: list[str] | None = None
