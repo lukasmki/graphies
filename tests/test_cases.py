@@ -115,3 +115,26 @@ def test_case7():
     graph = decode(selfies, grammar="tests/selfies.json")
     graphies = encode(graph, grammar="tests/selfies.json")
     assert graphies == "[C][O][C][C][C][F]"
+
+def test_case8():
+    """ Branch handling
+    selfies: At the first branch ([=Branch1][C]), the valence of N is exceeded so the branch is cancelled,
+    and backtracked so [C] is resolved as an atom instead of an index. The next token is [=O] which terminates.
+    graphies: The first branch is resolved to (=O), we perform the edge weight reduction yielding O=N(O).
+    The branch is exited after 1 atom, now [C] is resolved to an atom bound to [N], but this would exceed
+    valence and so is terminated. The final ring is passed as the [Ring1][Branch1] overshoots index 0.
+    """
+    selfies = "[O][=N][=Branch1][C][=O][C][=C][C][=C][N][Ring1][Branch1]"
+    graph = decode(selfies, grammar="tests/selfies.json")
+    graphies = encode(graph, grammar="tests/selfies.json")
+    reference = sf.encoder(sf.decoder(selfies))
+    assert graphies == "[O][=N][O]"
+    assert reference == "[O][=N][C][=O]"
+
+def test_case9():
+    """Pass branch and link tokens if there's no preceding node
+    """
+    selfies = "[Branch1][Ring2][O][C][=N][O][C][C][Branch1][C][C][C][=N][O]"
+    graph = decode(selfies, grammar="tests/selfies.json")
+    graphies = encode(graph, grammar="tests/selfies.json")
+    assert graphies == "[O][C][=N][O][C][C][Branch1][C][C][C][=N][O]"

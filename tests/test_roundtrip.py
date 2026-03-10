@@ -40,7 +40,7 @@ def test_roundtrip(path: Path):
         out_selfies = graphies
         out_smiles = sf.decoder(out_selfies)
         passed = check_mol(in_smiles, out_smiles)
-        assert passed, f"{in_smiles=}, {out_smiles=}"
+        assert passed, f"{in_smiles=}, {out_smiles=}, {in_selfies=}, {out_selfies=}"
 
 
 def check_mol(sma, smb):
