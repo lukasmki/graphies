@@ -129,39 +129,36 @@ class Grammar(BaseModel):
 
     def get_branch(self, size: int) -> BranchInstance:
         "Get a BranchInstance from size of branch"
-        digits = base16(size - 1)
+        indices = self.get_indices(size - 1)
 
-        branches = self._branch_lookup.get(len(digits), None)
+        branches = self._branch_lookup.get(len(indices), None)
         if branches is None:
-            raise ValueError(f"Could not find branch token with length {len(digits)}")
+            raise ValueError(f"Could not find branch token with length {len(indices)}")
         branch = branches[0]
-
-        indices = []
-        for digit in digits:
-            index = self._index_lookup.get(digit, None)
-            if index is None:
-                raise ValueError(f"Could not find index token for digit {digit}")
-            indices.append(index[0])
 
         return BranchInstance(symbol=branch.symbol, value=branch.value, indices=indices)
 
     def get_link(self, distance: int) -> LinkInstance:
         "Get a LinkInstance from the node distance between the source and the target"
-        digits = base16(distance - 1)
+        indices = self.get_indices(distance - 1)
 
-        links = self._link_lookup.get(len(digits), None)
+        links = self._link_lookup.get(len(indices), None)
         if links is None:
-            raise ValueError(f"Could not find branch token with length {len(digits)}")
+            raise ValueError(f"Could not find branch token with length {len(indices)}")
         link = links[0]
 
-        indices = []
+        return LinkInstance(symbol=link.symbol, value=link.value, indices=indices)
+    
+    def get_indices(self, value: int) -> list[Structure]:
+        "Convert a base10 value to a base16 sequence of index tokens"
+        digits = base16(value)
+        indices: list[Structure] = []
         for digit in digits:
             index = self._index_lookup.get(digit, None)
             if index is None:
                 raise ValueError(f"Could not find index token for digit {digit}")
             indices.append(index[0])
-
-        return LinkInstance(symbol=link.symbol, value=link.value, indices=indices)
+        return indices
 
     def modifier_combinations(self, node_symbol: str) -> Iterator[list[Modifier]]:
         by_type: dict[str, list[Modifier]] = defaultdict(list)

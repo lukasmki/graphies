@@ -39,13 +39,17 @@ class IndexCounter:
     edge: EdgeInstance
 
     remaining: int
-    value: int = 0
+    digits: list[int] = field(default_factory=list)
+
+    @property
+    def value(self):
+        return sum(d * (16**i) for i, d in enumerate(self.digits))
 
     def consume(self, token: TokenInstance):
         if logger.isEnabledFor(logging.DEBUG):
             assert isinstance(token.node, Structure)
         digit = token.node.value
-        self.value = (self.value << 4) + digit
+        self.digits.append(digit)
         self.remaining -= 1
 
 
@@ -277,6 +281,11 @@ class Decoder:
             assert state.previous_node is not None
             assert token.edge is not None
             logger.debug(f"Expecting {token.node.value} index token(s) for link")
+        
+        # if link is the first token
+        if state.previous_node is None:
+            # don't do anything
+            return
 
         edge = EdgeInstance(
             symbol=token.edge.symbol,
