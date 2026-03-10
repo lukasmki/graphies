@@ -148,7 +148,7 @@ class Grammar(BaseModel):
         link = links[0]
 
         return LinkInstance(symbol=link.symbol, value=link.value, indices=indices)
-    
+
     def get_indices(self, value: int) -> list[Structure]:
         "Convert a base10 value to a base16 sequence of index tokens"
         digits = base16(value)

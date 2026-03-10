@@ -99,9 +99,10 @@ def test_case6():
     assert reference == "[C][#S][=Branch1][C][=O][N]"
     assert graphies == "[C][=S][=Branch1][C][=O][=N]"
 
+
 def test_case7():
     """Link resolution again, explaining test case 1
-    The first link [Ring2][O][C] results in an overshoot that selfies 
+    The first link [Ring2][O][C] results in an overshoot that selfies
     resolves as a link to node 0. Fixing this would confict with test case 1,
     which passes the improperly indexed link. I see this most often like in this
     case where there would never be a valid [Ring2] token in a small molecule (<255 nodes).
@@ -111,13 +112,14 @@ def test_case7():
     link to node 0. Same for the second link which indexes [O] 9 atoms before the [Ring1] token
     """
     selfies = "[C][O][C][Ring2][O][C][C][Ring1][O][C][F][C]"
-    reference = "[C][O][C][Ring1][Ring1][C][Ring1][Ring2][C][F]"
+    _ = "[C][O][C][Ring1][Ring1][C][Ring1][Ring2][C][F]"
     graph = decode(selfies, grammar="tests/selfies.json")
     graphies = encode(graph, grammar="tests/selfies.json")
     assert graphies == "[C][O][C][C][C][F]"
 
+
 def test_case8():
-    """ Branch handling
+    """Branch handling
     selfies: At the first branch ([=Branch1][C]), the valence of N is exceeded so the branch is cancelled,
     and backtracked so [C] is resolved as an atom instead of an index. The next token is [=O] which terminates.
     graphies: The first branch is resolved to (=O), we perform the edge weight reduction yielding O=N(O).
@@ -131,9 +133,9 @@ def test_case8():
     assert graphies == "[O][=N][O]"
     assert reference == "[O][=N][C][=O]"
 
+
 def test_case9():
-    """Pass branch and link tokens if there's no preceding node
-    """
+    """Pass branch and link tokens if there's no preceding node"""
     selfies = "[Branch1][Ring2][O][C][=N][O][C][C][Branch1][C][C][C][=N][O]"
     graph = decode(selfies, grammar="tests/selfies.json")
     graphies = encode(graph, grammar="tests/selfies.json")

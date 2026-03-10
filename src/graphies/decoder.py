@@ -192,7 +192,9 @@ class Decoder:
                 modifiers=token.modifiers,
             )
             mod_data = {k: v for m in node.modifiers for k, v in m.data.items()}
-            graph.add_node(state.current_node, **node.model_dump(), **node.data, **mod_data)
+            graph.add_node(
+                state.current_node, **node.model_dump(), **node.data, **mod_data
+            )
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug(f"Added node {state.current_node} with degree {degree}")
 
@@ -230,7 +232,9 @@ class Decoder:
 
         # add edge
         edge = self.grammar.get_edge(edge_weight)
-        graph.add_edge(state.previous_node, state.current_node, **edge.model_dump(), **edge.data)
+        graph.add_edge(
+            state.previous_node, state.current_node, **edge.model_dump(), **edge.data
+        )
 
         # update node degree
         graph.nodes[state.previous_node]["degree"] -= edge_weight
@@ -255,7 +259,7 @@ class Decoder:
             assert state.previous_node is not None
             assert token.edge is not None
             logger.debug(f"Expecting {token.node.value} index token(s) for branch")
-        
+
         # if branch is the first token
         if state.previous_node is None:
             # don't do anything
@@ -281,7 +285,7 @@ class Decoder:
             assert state.previous_node is not None
             assert token.edge is not None
             logger.debug(f"Expecting {token.node.value} index token(s) for link")
-        
+
         # if link is the first token
         if state.previous_node is None:
             # don't do anything
@@ -366,9 +370,15 @@ class Decoder:
             # get edge instance for link_weight
             if graph.has_edge(link.source, link.target):
                 # add weight if an edge already exists
-                edge = self.grammar.get_edge(
-                    link_weight + graph.edges[link.source, link.target]["weight"]
-                )
+                try:
+                    edge = self.grammar.get_edge(
+                        link_weight + graph.edges[link.source, link.target]["weight"]
+                    )
+                except ValueError as e:
+                    # if can't find edge token with the updated weight, continue 
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug(e.args)
+                    continue
             else:
                 edge = self.grammar.get_edge(link_weight)
 
