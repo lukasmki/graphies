@@ -11,7 +11,7 @@ def base16(n: int) -> list[int]:
             n //= 16
         return digits
     else:
-        raise ValueError("n must be nonzero")
+        raise ValueError("n cannot be negative")
 
 
 class _TrieNode:

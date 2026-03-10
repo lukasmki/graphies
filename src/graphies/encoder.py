@@ -59,6 +59,11 @@ class Encoder:
         children = list(tree.successors(node_id))
         ancestors = list(tree.predecessors(node_id))
         links = set(neighbors) - set(children) - set(ancestors)
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Neighbors of {node_id}: {neighbors}")
+            logger.debug(f"Children of {node_id}: {children}")
+            logger.debug(f"Ancestors of {node_id}: {ancestors}")
+            logger.debug(f"Links of {node_id}: {links}")
 
         if not children:
             # create links
@@ -96,9 +101,11 @@ class Encoder:
         return tokens
 
     def create_link(self, graph: Graph, node_id, links):
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug(f"Resolving links for node {node_id}: {links}")
         tokens = []
         for link_id in links:
-            if link_id in self.visited and not graph.has_edge(node_id, link_id):
+            if link_id in self.visited:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(
                         f"Attempting to create link from node {node_id} to node {link_id}"
@@ -107,10 +114,12 @@ class Encoder:
                 edge = EdgeInstance(**graph.get_edge_data(node_id, link_id))
                 distance = self.visited.index(node_id) - self.visited.index(link_id)
                 if distance < 0:
-                    raise ValueError(
-                        "Cannot create link with node distance < 0:"
-                        f"{distance} = {self.visited.index(node_id)} - {self.visited.index(link_id)}"
-                    )
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug(
+                            "Cannot create link with node distance < 0:"
+                            f"{distance} = {self.visited.index(node_id)} - {self.visited.index(link_id)}"
+                        )
+                    continue
 
                 link: LinkInstance = self.grammar.get_link(distance)
                 tokens.append(TokenInstance(type=TokenType.LINK, node=link, edge=edge))
