@@ -18,7 +18,7 @@ class HFGraphiesDataset(Dataset):
         dataset: HFDataset,
         column: str,
         tokenizer: GraphiesTokenizer,
-        split: str = 'train',
+        split: str = "train",
         max_length: int | None = None,
     ):
         self.dataset: HFDataset = dataset
