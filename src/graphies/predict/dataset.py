@@ -18,18 +18,20 @@ class HFGraphiesDataset(Dataset):
         dataset: HFDataset,
         column: str,
         tokenizer: GraphiesTokenizer,
+        split: str = 'train',
         max_length: int | None = None,
     ):
         self.dataset: HFDataset = dataset
         self.column: str = column
+        self.graphies = self.dataset[split]
         self.tokenizer: GraphiesTokenizer = tokenizer
         self.max_length: int | None = max_length
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.graphies)
 
     def __getitem__(self, index):
-        graphies = self.dataset[index][self.column]
+        graphies = self.graphies[index][self.column]
         tokens = self.tokenizer.encode("[BEGIN]" + graphies + "[END]")
         if self.max_length:
             tokens = tokens[: self.max_length]
@@ -54,7 +56,7 @@ class CSVGraphiesDataset(Dataset):
         self.max_length: int | None = max_length
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.graphies)
 
     def __getitem__(self, index: int):
         graphies = self.graphies[index]
@@ -86,7 +88,7 @@ class CSVRandomizedGraphiesDataset(Dataset):
         self.decoder = Decoder(self.tokenizer.grammar)
 
     def __len__(self):
-        return len(self.dataset)
+        return len(self.graphies)
 
     def __getitem__(self, index: int):
         in_graphies = self.graphies[index]
