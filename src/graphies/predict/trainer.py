@@ -48,17 +48,21 @@ class GraphiesTrainer:
         self.device: torch.device | str | None = device
         if device:
             self.model.to(device)
+            for state in self.optimizer.state.values():
+                for k, v in state.items():
+                    if isinstance(v, torch.Tensor):
+                        state[k] = v.to(device)
 
         # checkpoint
+        self.epoch = 0
         self.ckpt: dict[str, Any] = {
             "model_kwargs": {},
             "optimizer_kwargs": {},
             "scheduler_kwargs": {},
         }
-        self.epoch = 0
         if checkpoint is not None:
-            self.ckpt.update(checkpoint)
             self.epoch = checkpoint.get("epoch", 0)
+            self.ckpt.update(checkpoint)
 
     @classmethod
     def from_checkpoint(
@@ -85,13 +89,11 @@ class GraphiesTrainer:
             ckpt["model_kwargs"].update(model_kwargs)
         model = model_cls(**ckpt["model_kwargs"])
         model.load_state_dict(ckpt["model_state_dict"])
-        model.to(device)
 
         # optimizer
         if optimizer_kwargs:
             ckpt["optimizer_kwargs"].update(optimizer_kwargs)
         optimizer = optimizer_cls(params=model.parameters(), **ckpt["optimizer_kwargs"])
-        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
 
         # scheduler
         if scheduler_cls:
@@ -101,6 +103,9 @@ class GraphiesTrainer:
             scheduler.load_state_dict(ckpt["scheduler_state_dict"])
         else:
             scheduler = None
+
+        # must come AFTER loading the scheduler
+        optimizer.load_state_dict(ckpt["optimizer_state_dict"])
 
         return cls(
             model=model,
@@ -112,21 +117,22 @@ class GraphiesTrainer:
 
     def save_checkpoint(self, path: str | Path) -> None:
         # update checkpoint dict
-        self.ckpt.update(
-            {
-                "epoch": self.epoch,
-                "model_state_dict": self.model.state_dict(),
-                "optimizer_state_dict": self.optimizer.state_dict(),
-            }
-        )
+        ckpt = {
+            "epoch": self.epoch + 1,
+            "model_kwargs": self.ckpt["model_kwargs"],
+            "optimizer_kwargs": self.ckpt["optimizer_kwargs"],
+            "scheduler_kwargs": self.ckpt["scheduler_kwargs"],
+            "model_state_dict": self.model.state_dict(),
+            "optimizer_state_dict": self.optimizer.state_dict(),
+        }
         if self.scheduler:
-            self.ckpt.update({"scheduler_state_dict": self.scheduler.state_dict()})
+            ckpt["scheduler_state_dict"] = self.scheduler.state_dict()
 
         # save to path
         path = Path(path) if isinstance(path, str) else path
         path.resolve()
         path.parent.mkdir(parents=True, exist_ok=True)
-        torch.save(self.ckpt, path.with_suffix(".pt"))
+        torch.save(ckpt, path.with_suffix(".pt"))
 
     def train(
         self,
@@ -175,38 +181,38 @@ class GraphiesTrainer:
                 avg_train_loss = train_loss / (i + 1)
                 pbar.set_postfix(loss=f"{avg_train_loss:0.4f}")
 
-            # validation
-            val_loss = avg_val_loss = None
-            if val is not None and ((epoch + 1) % val_interval == 0):
-                self.model.eval()
-                pbar = tqdm(val, desc=f"Validation {epoch + 1}")
-                val_loss = 0.0
-                for i, batch in enumerate(pbar):
-                    sequences, lengths = batch
-                    sequences = sequences.to(self.device)
-                    lengths = lengths.to(self.device)
-                    loss = loss_fn(self.model, (sequences, lengths))
-                    val_loss += loss.item()
-                    avg_val_loss = val_loss / (i + 1)
-                    pbar.set_postfix(loss=f"{avg_val_loss:0.4f}")
-
-            # test
-            test_loss = avg_test_loss = None
-            if test is not None and ((epoch + 1) % test_interval == 0):
-                self.model.eval()
-                pbar = tqdm(test, desc=f"Test {epoch + 1}")
-                test_loss = 0.0
-                for i, batch in enumerate(pbar):
-                    sequences, lengths = batch
-                    sequences = sequences.to(self.device)
-                    lengths = lengths.to(self.device)
-                    loss = loss_fn(self.model, (sequences, lengths))
-                    test_loss += loss.item()
-                    avg_test_loss = test_loss / (i + 1)
-                    pbar.set_postfix(loss=f"{avg_test_loss:0.4f}")
+            # testing and validation
+            with torch.no_grad():
+                # validation
+                val_loss = avg_val_loss = None
+                if val is not None and ((epoch + 1) % val_interval == 0):
+                    # self.model.eval()
+                    pbar = tqdm(val, desc=f"Validation {epoch + 1}")
+                    val_loss = 0.0
+                    for i, batch in enumerate(pbar):
+                        sequences, lengths = batch
+                        sequences = sequences.to(self.device)
+                        lengths = lengths.to(self.device)
+                        loss = loss_fn(self.model, (sequences, lengths))
+                        val_loss += loss.item()
+                        avg_val_loss = val_loss / (i + 1)
+                        pbar.set_postfix(loss=f"{avg_val_loss:0.4f}")
+                # test
+                test_loss = avg_test_loss = None
+                if test is not None and ((epoch + 1) % test_interval == 0):
+                    # self.model.eval()
+                    pbar = tqdm(test, desc=f"Test {epoch + 1}")
+                    test_loss = 0.0
+                    for i, batch in enumerate(pbar):
+                        sequences, lengths = batch
+                        sequences = sequences.to(self.device)
+                        lengths = lengths.to(self.device)
+                        loss = loss_fn(self.model, (sequences, lengths))
+                        test_loss += loss.item()
+                        avg_test_loss = test_loss / (i + 1)
+                        pbar.set_postfix(loss=f"{avg_test_loss:0.4f}")
 
             # update lr scheduler
-            self.epoch = epoch + 1
             if self.scheduler:
                 if isinstance(self.scheduler, ReduceLROnPlateau):
                     self.scheduler.step(metrics=avg_train_loss)
@@ -224,7 +230,6 @@ class GraphiesTrainer:
             if log is not None:
                 log = Path(log) if isinstance(log, str) else log
                 log.parent.mkdir(parents=True, exist_ok=True)
-
                 output = {
                     "epoch": epoch,
                     "avg_train_loss": avg_train_loss,
@@ -235,9 +240,13 @@ class GraphiesTrainer:
                     file = log.open("a", newline="")
                     writer = csv.DictWriter(file, fieldnames=output.keys())
 
-                if epoch == 0:
+                if log.stat().st_size == 0:
                     writer.writeheader()
                 writer.writerow(output)
                 file.flush()
 
-        file.close()
+            # increment
+            self.epoch = epoch + 1
+
+        if log is not None:
+            file.close()
