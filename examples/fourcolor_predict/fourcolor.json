@@ -1,0 +1,20 @@
+{
+    "nodes"    : [
+        { "symbol": "R", "degree": 24, "data": {"color": 0} },
+        { "symbol": "B", "degree": 24, "data": {"color": 1} },
+        { "symbol": "G", "degree": 24, "data": {"color": 2} },
+        { "symbol": "O", "degree": 24, "data": {"color": 3} }
+    ],
+    "edges"    : [ {"symbol": "-", "weight": 1}, {"symbol": "*", "weight": 1} ],
+    "branches" : [ {"symbol": "Fork1", "value": 1}, {"symbol": "Fork2", "value": 2}, {"symbol": "Fork3", "value": 3} ],
+    "links"    : [ {"symbol": "Link1", "value": 1}, {"symbol": "Link2", "value": 2}, {"symbol": "Link3", "value": 3} ],
+    "index"    : [
+        {"symbol": "0", "value":  0}, {"symbol": "1", "value":  1}, {"symbol": "2", "value":  2},
+        {"symbol": "3", "value":  3}, {"symbol": "4", "value":  4}, {"symbol": "5", "value":  5},
+        {"symbol": "6", "value":  6}, {"symbol": "7", "value":  7}, {"symbol": "8", "value":  8},
+        {"symbol": "9", "value":  9}, {"symbol": "A", "value": 10}, {"symbol": "B", "value": 11},
+        {"symbol": "C", "value": 12}, {"symbol": "D", "value": 13}, {"symbol": "E", "value": 14},
+        {"symbol": "F", "value": 15}
+    ],
+    "modifiers": []
+}
