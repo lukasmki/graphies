@@ -22,6 +22,8 @@ class Encoder:
         self.visited: list[int] = list()
 
     def encode(self, graph: Graph, source=None) -> str:
+        if len(graph) == 0:
+            raise ValueError("Graph has no nodes")
         # walk and build token sequence
         source = list(graph)[0] if source is None else source
         tree = nx.dfs_tree(graph, source=source, sort_neighbors=sorted)

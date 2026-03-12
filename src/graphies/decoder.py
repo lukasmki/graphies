@@ -375,7 +375,7 @@ class Decoder:
                         link_weight + graph.edges[link.source, link.target]["weight"]
                     )
                 except ValueError as e:
-                    # if can't find edge token with the updated weight, continue 
+                    # if can't find edge token with the updated weight, continue
                     if logger.isEnabledFor(logging.DEBUG):
                         logger.debug(e.args)
                     continue

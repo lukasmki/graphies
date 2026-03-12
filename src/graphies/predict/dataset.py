@@ -5,6 +5,7 @@ import polars as pl
 import torch
 from datasets import Dataset as HFDataset
 from polars import DataFrame
+from polars.series.series import Series
 from torch.utils.data import Dataset
 
 from graphies import Decoder, Encoder
@@ -32,7 +33,7 @@ class HFGraphiesDataset(Dataset):
         tokens = self.tokenizer.encode("[BEGIN]" + graphies + "[END]")
         if self.max_length:
             tokens = tokens[: self.max_length]
-        return torch.tensor(tokens, dtype=torch.long)
+        return torch.as_tensor(tokens, dtype=torch.long)
 
 
 class CSVGraphiesDataset(Dataset):
@@ -48,6 +49,7 @@ class CSVGraphiesDataset(Dataset):
         path = path.resolve()
         self.dataset: DataFrame = pl.read_csv(path, columns=[column])
         self.column: str = column
+        self.graphies: Series = self.dataset[column]
         self.tokenizer: GraphiesTokenizer = tokenizer
         self.max_length: int | None = max_length
 
@@ -55,12 +57,12 @@ class CSVGraphiesDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index: int):
-        graphies = self.dataset.row(index, named=True)[self.column]
+        graphies = self.graphies[index]
         tokens = self.tokenizer.encode("[BEGIN]" + graphies + "[END]")
         if self.max_length:
             tokens = tokens[: self.max_length]
 
-        return torch.tensor(tokens, dtype=torch.long)
+        return torch.as_tensor(tokens, dtype=torch.long)
 
 
 class CSVRandomizedGraphiesDataset(Dataset):
@@ -76,6 +78,7 @@ class CSVRandomizedGraphiesDataset(Dataset):
         path = path.resolve()
         self.dataset: DataFrame = pl.read_csv(path, columns=[column])
         self.column: str = column
+        self.graphies: Series = self.dataset[column]
         self.tokenizer: GraphiesTokenizer = tokenizer
         self.max_length: int | None = max_length
 
@@ -86,11 +89,11 @@ class CSVRandomizedGraphiesDataset(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index: int):
-        in_graphies = self.dataset.row(index, named=True)[self.column]
+        in_graphies = self.graphies[index]
         graph = self.decoder.decode(in_graphies)
         source = random.choice(list(graph.nodes))
         graphies = self.encoder.encode(graph, source)
         tokens = self.tokenizer.encode("[BEGIN]" + graphies + "[END]")
         if self.max_length:
             tokens = tokens[: self.max_length]
-        return torch.tensor(tokens, dtype=torch.long)
+        return torch.as_tensor(tokens, dtype=torch.long)
