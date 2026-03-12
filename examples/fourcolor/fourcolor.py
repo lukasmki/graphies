@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-def random_planar_graph(n: int = 10, seed: int | None = None) -> nx.Graph:
+def random_planar_graph(n: int = 10, seed: int | None = None, dropout=0.8) -> nx.Graph:
     if seed is not None:
         random.seed(seed)
 
@@ -21,7 +21,11 @@ def random_planar_graph(n: int = 10, seed: int | None = None) -> nx.Graph:
     all_edges = [
         (u, v) for u in range(n) for v in range(u + 1, n) if not G.has_edge(u, v)
     ]
+    random.shuffle(all_edges)
     for u, v in all_edges:
+        if random.random() < dropout:
+            continue
+
         G.add_edge(u, v)
         if not nx.is_planar(G):
             G.remove_edge(u, v)
@@ -56,17 +60,17 @@ def four_color_graph(G: nx.Graph) -> nx.Graph:
     return G
 
 
-def draw_colored_graph(G: nx.Graph, title="") -> None:
+def draw_colored_graph(G: nx.Graph, ax, pos=None, title=""):
     color_map = {0: "#E74C3C", 1: "#3498DB", 2: "#2ECC71", 3: "#F39C12"}
 
     node_colors = [color_map[G.nodes[n]["color"]] for n in G.nodes()]
 
-    try:
-        pos = nx.planar_layout(G)
-    except nx.NetworkXException:
-        pos = nx.spring_layout(G, seed=42)
+    if pos is None:
+        try:
+            pos = nx.planar_layout(G)
+        except nx.NetworkXException:
+            pos = nx.spring_layout(G, seed=42)
 
-    fig, ax = plt.subplots(1, 1, figsize=(10, 7))
     nx.draw_networkx(
         G,
         pos,
@@ -97,11 +101,14 @@ def draw_colored_graph(G: nx.Graph, title="") -> None:
     ]
     ax.legend(handles=handles, loc="upper left", framealpha=0.9)
     ax.set_title(f"Four-Colored Planar Graph\n{title}", fontsize=14, fontweight="bold")
-    fig.tight_layout()
-    plt.show()
+    return pos
 
 
 if __name__ == "__main__":
     graph = random_planar_graph()
     colored = four_color_graph(graph)
-    draw_colored_graph(colored)
+
+    fig, ax = plt.subplots(1, 1, figsize=(10, 7))
+    draw_colored_graph(colored, ax)
+    fig.tight_layout()
+    plt.show()

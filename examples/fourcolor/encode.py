@@ -1,9 +1,10 @@
-from graphies import encode
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import networkx as nx
-from fourcolor import four_color_graph, random_planar_graph, draw_colored_graph
+from fourcolor import draw_colored_graph, four_color_graph, random_planar_graph
 
+from graphies import decode, encode
 from graphies.instances import EdgeInstance, NodeInstance
 
 root = Path(__file__).parent.resolve()
@@ -33,12 +34,22 @@ def format_colored_graph(G: nx.Graph):
     return graph
 
 
-# generate a random four-colored graph
-planar = random_planar_graph(n=10)
-colored = four_color_graph(planar)
-graph = format_colored_graph(colored)
+if __name__ == "__main__":
+    # generate a random four-colored graph
+    planar = random_planar_graph(n=26)
+    colored = four_color_graph(planar)
+    graph = format_colored_graph(colored)
+    graphies = encode(graph, root / "fourcolor.json")
+    print("GRAPHIES", graphies)
 
-graphies = encode(graph, root / "fourcolor.json")
-draw_colored_graph(graph, title=f"'{graphies}'")
+    # re-encoded graph
+    regraph = decode(graphies, root / "fourcolor.json")
+    regraphies = encode(regraph, root / "fourcolor.json")
+    print("ISOMORPHIC", nx.is_isomorphic(graph, regraph))
 
-print("GRAPHIES", graphies)
+    # plot
+    fig, ax = plt.subplots(1, 2, figsize=(16, 8))
+    draw_colored_graph(graph, ax[0], title="Original")
+    draw_colored_graph(regraph, ax[1], title="Encoded")
+    fig.tight_layout()
+    plt.show()
