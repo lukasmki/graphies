@@ -116,6 +116,7 @@ class GraphiesTrainer:
         )
 
     def save_checkpoint(self, path: str | Path) -> None:
+        "Save checkpoint to path for restart"
         # update checkpoint dict
         ckpt = {
             "epoch": self.epoch + 1,
@@ -133,6 +134,18 @@ class GraphiesTrainer:
         path.resolve()
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(ckpt, path.with_suffix(".pt"))
+
+    def save_model(self, path: str | Path) -> None:
+        "Save only the model to path"
+        model = {
+            "model_kwargs": self.ckpt["model_kwargs"],
+            "model_state_dict": self.model.state_dict(),
+        }
+        # save to path
+        path = Path(path) if isinstance(path, str) else path
+        path.resolve()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(model, path.with_suffix(".pt"))
 
     def train(
         self,
