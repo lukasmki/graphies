@@ -111,10 +111,69 @@ class GraphiesModel:
         top_p: float = 1,
         max_len: int = 200,
     ) -> list[str]:
+        """Generates graphies sequences
+
+        Args:
+            num (int, optional): Number of sequences to generate. Defaults to 16.
+            temperature (float, optional): Model tempertaure. Defaults to 1.
+            top_p (float, optional): Cumulative probability threshold. Defaults to 1.
+            max_len (int, optional): Maximum sequence length. Defaults to 200.
+
+        Returns:
+            list[str]: List of generated graphies sequences
+        """
         self.model.eval()
 
         sequences = torch.ones((num, 1), dtype=torch.long, device=self.device)
         lengths = torch.ones((num,), dtype=torch.long, device=self.device)
+
+        sequences, lengths = self._generate(
+            sequences, lengths, temperature=temperature, top_p=top_p, max_len=max_len
+        )
+
+        seq_out: list[list[int]] = sequences.tolist()
+        len_out: list[int] = lengths.tolist()
+        str_out = [
+            self.tokenizer.decode(seq_int[:length])
+            for seq_int, length in zip(seq_out, len_out, strict=True)
+        ]
+        return str_out
+
+    def extend(
+        self,
+        graphies: str | list[str],
+        num: int = 5,
+        temperature: float = 1,
+        top_p: float = 1,
+        max_len: int = 200,
+    ) -> list[str]:
+        """Extends graphies sequences
+
+        Args:
+            graphies (str | list[str]): Sequence or list of sequences to extend.
+            num (int, optional): Number of sequences to generate for each graphies. Defaults to 16.
+            temperature (float, optional): Model tempertaure. Defaults to 1.
+            top_p (float, optional): Cumulative probability threshold. Defaults to 1.
+            max_len (int, optional): Maximum extension sequence length. Does not include original sequence length. Defaults to 200.
+        Returns:
+            list[str]: List of generated graphies sequences
+        """
+        self.model.eval()
+        if isinstance(graphies, str):
+            graphies = [graphies]
+
+        tokens = [
+            torch.as_tensor(
+                self.tokenizer.encode("[BEGIN]" + seq),
+                dtype=torch.long,
+                device=self.device,
+            )
+            for seq in graphies
+        ]
+        sequences = torch.repeat_interleave(torch.stack(tokens), repeats=num, dim=0)
+        lengths = torch.repeat_interleave(
+            torch.as_tensor([seq.size(dim=0) for seq in tokens]), repeats=num, dim=0
+        )
 
         sequences, lengths = self._generate(
             sequences, lengths, temperature=temperature, top_p=top_p, max_len=max_len
