@@ -49,7 +49,7 @@ class IndexCounter:
         if logger.isEnabledFor(logging.DEBUG):
             assert isinstance(token.node, Structure)
         digit = token.node.value
-        self.digits.append(digit)
+        self.digits.insert(0, digit)
         self.remaining -= 1
 
 

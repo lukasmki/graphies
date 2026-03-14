@@ -1,3 +1,5 @@
+import selfies as sf
+
 from graphies import decode, encode
 from graphies.decoder import IndexCounter
 from graphies.grammar import Grammar
@@ -41,8 +43,22 @@ def test_ordering():
     """
     print()
     graphies = (
-        "[R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][Link2][3][1]"
+        "[R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][R][Link2][1][3]"
     )
     graph = decode(graphies, GRAMMAR)
     regraphies = encode(graph, GRAMMAR)
+    assert graphies == regraphies
+
+
+def test_selfies_ordering():
+    """test the ordering of selfies vs graphies index tokens
+    index token values should be in order
+    19 = [3, 1] = 3*(16^0) + 1*(16^1)
+    """
+    print()
+    graphies = "[C][C][C][C][C][C][C][C][C][C][C][C][C][C][C][C][C][C][C][C][C][Ring2][Ring1][Branch1]"
+    graph = decode(graphies, "tests/selfies.json")
+    regraphies = encode(graph, "tests/selfies.json")
+    selfies = sf.encoder(sf.decoder(graphies))
+    assert graphies == selfies
     assert graphies == regraphies

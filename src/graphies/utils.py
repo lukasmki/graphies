@@ -7,7 +7,7 @@ def base16(n: int) -> list[int]:
     elif n > 0:
         digits: list[int] = []
         while n > 0:
-            digits.append(n % 16)
+            digits.insert(0, n % 16)
             n //= 16
         return digits
     else:
