@@ -1,4 +1,3 @@
-import json
 import re
 from collections import defaultdict
 from collections.abc import Iterator
@@ -40,9 +39,6 @@ class Grammar(BaseModel):
     _branch_lookup: dict[int, list[Structure]] = PrivateAttr()
 
     def model_post_init(self, ctx: object):
-        self._build_lookup()
-
-    def _build_lookup(self):
         # symbol-based lookups
         self._edge_lookup = {e.symbol: e for e in self.edges}
         self._node_lookup = {n.symbol: n for n in self.nodes}
@@ -100,9 +96,7 @@ class Grammar(BaseModel):
 
     @classmethod
     def from_file(cls, path: str | Path) -> "Grammar":
-        path = Path(path) if isinstance(path, str) else path
-        data = json.loads(path.resolve().read_text())
-        return cls.model_validate(data)
+        return cls.model_validate_json(Path(path).read_text())
 
     @cached_property
     def default_edge(self) -> Edge | None:
