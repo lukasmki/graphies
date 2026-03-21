@@ -23,6 +23,12 @@ from graphies.utils import TokenTrie, base16
 
 
 class Grammar(BaseModel):
+    """GRAPHIES Grammar
+
+    This subclasses the Pydantic BaseModel and can be constructed in many ways.
+    See the `Pydantic Docs <https://docs.pydantic.dev/latest/concepts/models/#model-methods-and-properties>`_ for more information.
+    """
+
     nodes: list[Node]
     edges: list[Edge]
     index: list[Structure]
@@ -39,6 +45,10 @@ class Grammar(BaseModel):
     _branch_lookup: dict[int, list[Structure]] = PrivateAttr()
 
     def model_post_init(self, ctx: object):
+        """Post-init method for building lookups
+
+        :meta private:
+        """
         # symbol-based lookups
         self._edge_lookup = {e.symbol: e for e in self.edges}
         self._node_lookup = {n.symbol: n for n in self.nodes}
@@ -67,6 +77,13 @@ class Grammar(BaseModel):
             self._trie.insert(token)
 
     def tokenize(self, text: str) -> Iterator[list[TokenInstance]]:
+        """Tokenize a GRAPHIES sequence
+
+        :param text: _description_
+        :type text: str
+        :yield: _description_
+        :rtype: Iterator[list[TokenInstance]]
+        """
         TOKEN_RE: Pattern[str] = re.compile(pattern=r"\[[^\]]*\]|[^\[\]\s]")
         for symbol in TOKEN_RE.findall(text):
             yield self._trie.search(symbol)

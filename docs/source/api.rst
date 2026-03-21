@@ -10,6 +10,7 @@ Grammar
 -------
 .. automodule:: graphies.grammar
    :members:
+   :exclude-members: BaseModel, model_config
 
 Decoder
 -------

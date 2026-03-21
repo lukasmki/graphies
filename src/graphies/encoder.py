@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Hashable, Iterable
 
 import networkx as nx
 from networkx import DiGraph, Graph
@@ -13,15 +14,29 @@ from graphies.instances import (
     TokenType,
 )
 
+__all__ = ["Encoder"]
+
 logger = logging.getLogger(__name__)
 
 
 class Encoder:
+    """GRAPHIES Encoder"""
+
     def __init__(self, grammar: Grammar):
         self.grammar: Grammar = grammar
-        self.visited: list[int] = list()
+        self.visited: list[Hashable] = list()
 
-    def encode(self, graph: Graph, source=None) -> str:
+    def encode(self, graph: Graph, source: Hashable = None) -> str:
+        """Encode a NetworkX Graph to GRAPHIES sequence
+
+        :param graph: Graph to encode
+        :type graph: Graph
+        :param source: Root node to begin encoding, defaults to None
+        :type source: Hashable, optional
+        :raises ValueError: If a token cannot be found to represent graph structure (node, edge, branch/link length)
+        :return: GRAPHIES sequence
+        :rtype: str
+        """
         if len(graph) == 0:
             raise ValueError("Graph has no nodes")
         # walk and build token sequence
@@ -36,7 +51,11 @@ class Encoder:
         return "".join([t.symbol for t in tokens])
 
     def walk(
-        self, graph: Graph, tree: DiGraph, node_id: int, parent: int | None = None
+        self,
+        graph: Graph,
+        tree: DiGraph,
+        node_id: Hashable,
+        parent: Hashable | None = None,
     ) -> list[TokenInstance]:
         tokens: list[TokenInstance] = []
         self.visited.append(node_id)  # add to visited nodes
@@ -102,7 +121,7 @@ class Encoder:
 
         return tokens
 
-    def create_link(self, graph: Graph, node_id, links):
+    def create_link(self, graph: Graph, node_id: Hashable, links: Iterable[Hashable]):
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug(f"Resolving links for node {node_id}: {links}")
         tokens = []

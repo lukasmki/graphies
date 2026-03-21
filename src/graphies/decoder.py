@@ -14,6 +14,8 @@ from graphies.instances import (
     TokenType,
 )
 
+__all__ = ["Decoder"]
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,12 +76,19 @@ class State:
 
 
 class Decoder:
-    """Decode graphies to networkx.Graph"""
+    """GRAPHIES Decoder"""
 
     def __init__(self, grammar: Grammar):
         self.grammar: Grammar = grammar
 
     def decode(self, text: str) -> Graph:
+        """Decode GRAPHIES to NetworkX Graph
+
+        :param text: GRAPHIES sequence
+        :type text: str
+        :return: Decoded graph
+        :rtype: Graph
+        """
         # initialize state
         state = State()
         graph = Graph()
@@ -107,8 +116,6 @@ class Decoder:
                 self.handle_index(token, state)
             elif token.type == TokenType.UNKNOWN:
                 pass
-            else:
-                raise ValueError("Unknown token type")
 
             # check to exit branch
             if state.inside_branch:
