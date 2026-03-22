@@ -1,20 +1,20 @@
 from pathlib import Path
 
 import torch
-from torch.nn import Module
 
 from graphies.predict.tokenizer import GraphiesTokenizer
+from graphies.predict.trainer import SupportedModel
 
 
 class GraphiesModel:
     def __init__(
         self,
         tokenizer: GraphiesTokenizer,
-        model: Module,
+        model: SupportedModel,
         device: str | torch.device | int | None = None,
     ):
         self.tokenizer: GraphiesTokenizer = tokenizer
-        self.model: Module = model
+        self.model: SupportedModel = model
         self.device = device
         if device:
             self.model.to(device=device)
@@ -24,7 +24,7 @@ class GraphiesModel:
         cls,
         checkpoint: str | Path | dict,
         tokenizer: GraphiesTokenizer,
-        model_cls: type[Module],
+        model_cls: type[SupportedModel],
         device: torch.device | str | None = None,
     ) -> "GraphiesModel":
         if isinstance(checkpoint, str):
@@ -186,3 +186,26 @@ class GraphiesModel:
             for seq_int, length in zip(seq_out, len_out, strict=True)
         ]
         return str_out
+
+    def embed(self, graphies: str | list[str]) -> list[list[float]]:
+        self.model.eval()
+        if isinstance(graphies, str):
+            graphies = [graphies]
+
+        tokens = [
+            torch.as_tensor(
+                self.tokenizer.encode("[BEGIN]" + seq),
+                dtype=torch.long,
+                device=self.device,
+            )
+            for seq in graphies
+        ]
+        sequences = torch.stack(tokens)
+        lengths = torch.as_tensor([seq.size(dim=0) for seq in tokens])
+
+        _, hidden = self.model(sequences, lengths)
+
+        # output final hidden state
+        embeddings: list[list[float]] = hidden[-1].tolist()
+
+        return embeddings

@@ -10,9 +10,9 @@ from torch.optim.lr_scheduler import LRScheduler, ReduceLROnPlateau
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from graphies.predict.models import GRU
+from graphies.predict.models import GRU, LSTM
 
-type SupportedModel = GRU
+type SupportedModel = GRU | LSTM
 
 
 class GraphiesTrainer:
@@ -199,7 +199,7 @@ class GraphiesTrainer:
                 # validation
                 val_loss = avg_val_loss = None
                 if val is not None and ((epoch + 1) % val_interval == 0):
-                    # self.model.eval()
+                    self.model.eval()
                     pbar = tqdm(val, desc=f"Validation {epoch + 1}")
                     val_loss = 0.0
                     for i, batch in enumerate(pbar):
@@ -213,7 +213,7 @@ class GraphiesTrainer:
                 # test
                 test_loss = avg_test_loss = None
                 if test is not None and ((epoch + 1) % test_interval == 0):
-                    # self.model.eval()
+                    self.model.eval()
                     pbar = tqdm(test, desc=f"Test {epoch + 1}")
                     test_loss = 0.0
                     for i, batch in enumerate(pbar):
