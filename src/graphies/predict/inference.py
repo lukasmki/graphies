@@ -170,7 +170,18 @@ class GraphiesModel:
             )
             for seq in graphies
         ]
-        sequences = torch.repeat_interleave(torch.stack(tokens), repeats=num, dim=0)
+        max_length = max(t.size(0) for t in tokens)
+        padded_tokens = torch.stack(
+            tensors=[
+                torch.nn.functional.pad(
+                    input=t,
+                    pad=(max_length - t.size(0), 0),
+                    value=self.tokenizer.null_index,
+                )
+                for t in tokens
+            ]
+        )
+        sequences = torch.repeat_interleave(padded_tokens, repeats=num, dim=0)
         lengths = torch.repeat_interleave(
             torch.as_tensor([seq.size(dim=0) for seq in tokens]), repeats=num, dim=0
         )
@@ -200,7 +211,18 @@ class GraphiesModel:
             )
             for seq in graphies
         ]
-        sequences = torch.stack(tokens)
+        max_length = max(t.size(0) for t in tokens)
+        padded_tokens = torch.stack(
+            tensors=[
+                torch.nn.functional.pad(
+                    input=t,
+                    pad=(max_length - t.size(0), 0),
+                    value=self.tokenizer.null_index,
+                )
+                for t in tokens
+            ]
+        )
+        sequences = padded_tokens
         lengths = torch.as_tensor([seq.size(dim=0) for seq in tokens])
 
         _, hidden = self.model(sequences, lengths)

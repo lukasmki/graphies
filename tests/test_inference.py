@@ -67,3 +67,12 @@ def test_embed(max_len=10):
     embeddings = MODEL.embed(graphies)
     embeddings = np.array(embeddings)
     assert embeddings.shape == (16, 512)
+
+    graphies = ["[C][=C][C][=C][C][=C]", "[C][=C][C][=C][C][=C][Ring1][=Branch1]"]
+    embeddings = MODEL.embed(graphies)
+    embeddings = np.array(embeddings)
+
+    cossim = np.dot(embeddings[0], embeddings[1]) / (
+        np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1])
+    )
+    print(cossim)
