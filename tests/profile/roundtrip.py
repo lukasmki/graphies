@@ -1,19 +1,16 @@
 import cProfile
 import pstats
 
-from graphies import decode, encode
-from graphies.grammar import Grammar
+from graphies import Graphies
 
 profiler = cProfile.Profile()
 
-
+SESSION = Graphies("tests/selfies.json")
 SELFIES = "[C][N][C][C][C][O][C][Ring1][#Branch1][Ring1][Branch1][C][Ring1][#Branch1][C][Ring1][=Branch1][Ring1][Branch1]"
 
 profiler.enable()
-GRAMMAR = Grammar.from_file("tests/selfies.json")
-for _ in range(1000):
-    GRAPH = decode(SELFIES, GRAMMAR)
-    GRAPHIES = encode(GRAPH, GRAMMAR)
+GRAPH = SESSION.decode(SELFIES)
+GRAPHIES = SESSION.encode(GRAPH)
 profiler.disable()
 
 stats = pstats.Stats(profiler)
