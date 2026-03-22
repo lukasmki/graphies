@@ -1,4 +1,4 @@
-# GRAPHIES Grammar
+# Grammar
 
 The `Grammar` is the central object in the graphies package and defines the tokenization, degree constraints, node and edge types, and available modifiers.
 It also can set node or edge level data on decoded graphs for compatibility with downstream processing.
