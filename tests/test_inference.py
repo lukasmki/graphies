@@ -3,6 +3,8 @@ from importlib.util import find_spec
 if find_spec("torch") is None:
     raise ImportError("Install torch to use the graphies.predict module")
 
+import numpy as np
+
 from graphies.predict import GraphiesModel, GraphiesTokenizer
 from graphies.predict.models import GRU
 
@@ -52,3 +54,16 @@ def test_extend(max_len=10):
         seq = TOKENIZER.encode(gf)
         print(len(seq), gf)
         assert len(seq) - 2 <= max_len + 10
+
+
+def test_embed(max_len=10):
+    graphies = MODEL.generate(
+        num=16,
+        temperature=1,
+        top_p=1,
+        max_len=max_len,
+    )
+
+    embeddings = MODEL.embed(graphies)
+    embeddings = np.array(embeddings)
+    assert embeddings.shape == (16, 512)
