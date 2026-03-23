@@ -68,7 +68,10 @@ def test_embed(max_len=10):
     embeddings = np.array(embeddings)
     assert embeddings.shape == (16, 512)
 
-    graphies = ["[C][=C][C][=C][C][=C]", "[C][=C][C][=C][C][=C][Ring1][=Branch1]"]
+    graphies = [
+        "[C][C][=C][C][=C][C][=Ring1][=Branch1]",
+        "[C][=C][C][=C][C][=C][Ring1][=Branch1]",
+    ]
     embeddings = MODEL.embed(graphies)
     embeddings = np.array(embeddings)
 

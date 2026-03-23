@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import torch
+from torch.nn.utils.rnn import pad_sequence
 
 from graphies.predict.tokenizer import GraphiesTokenizer
 from graphies.predict.trainer import SupportedModel
@@ -162,7 +163,7 @@ class GraphiesModel:
         if isinstance(graphies, str):
             graphies = [graphies]
 
-        tokens = [
+        batch = [
             torch.as_tensor(
                 self.tokenizer.encode("[BEGIN]" + seq),
                 dtype=torch.long,
@@ -170,24 +171,20 @@ class GraphiesModel:
             )
             for seq in graphies
         ]
-        max_length = max(t.size(0) for t in tokens)
-        padded_tokens = torch.stack(
-            tensors=[
-                torch.nn.functional.pad(
-                    input=t,
-                    pad=(max_length - t.size(0), 0),
-                    value=self.tokenizer.null_index,
-                )
-                for t in tokens
-            ]
-        )
-        sequences = torch.repeat_interleave(padded_tokens, repeats=num, dim=0)
-        lengths = torch.repeat_interleave(
-            torch.as_tensor([seq.size(dim=0) for seq in tokens]), repeats=num, dim=0
+        lengths = torch.tensor([len(x) for x in batch])
+        sequences = pad_sequence(
+            batch,
+            batch_first=True,
+            padding_value=self.tokenizer.null_index,
+            padding_side="left",
         )
 
         sequences, lengths = self._generate(
-            sequences, lengths, temperature=temperature, top_p=top_p, max_len=max_len
+            torch.repeat_interleave(sequences, repeats=num, dim=0),
+            torch.repeat_interleave(lengths, repeats=num, dim=0),
+            temperature=temperature,
+            top_p=top_p,
+            max_len=max_len,
         )
 
         seq_out: list[list[int]] = sequences.tolist()
@@ -203,28 +200,21 @@ class GraphiesModel:
         if isinstance(graphies, str):
             graphies = [graphies]
 
-        tokens = [
+        batch = [
             torch.as_tensor(
-                self.tokenizer.encode("[BEGIN]" + seq),
+                self.tokenizer.encode("[BEGIN]" + seq + "[END]"),
                 dtype=torch.long,
                 device=self.device,
             )
             for seq in graphies
         ]
-        max_length = max(t.size(0) for t in tokens)
-        padded_tokens = torch.stack(
-            tensors=[
-                torch.nn.functional.pad(
-                    input=t,
-                    pad=(max_length - t.size(0), 0),
-                    value=self.tokenizer.null_index,
-                )
-                for t in tokens
-            ]
+        lengths = torch.tensor([len(x) for x in batch])
+        sequences = pad_sequence(
+            batch,
+            batch_first=True,
+            padding_value=self.tokenizer.null_index,
+            padding_side="right",
         )
-        sequences = padded_tokens
-        lengths = torch.as_tensor([seq.size(dim=0) for seq in tokens])
-
         _, hidden = self.model(sequences, lengths)
 
         # output final hidden state
