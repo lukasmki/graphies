@@ -1,6 +1,7 @@
+import torch
 import torch.nn as nn
 from torch import Tensor
-from torch.nn.functional import cross_entropy
+from torch.nn.functional import cross_entropy, log_softmax, logsigmoid
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 
@@ -73,6 +74,57 @@ class GRU(nn.Module):
             target=targets.reshape(-1),  # (N,)
             ignore_index=0,
         )
+        return loss
+
+    @staticmethod
+    def loss_fn_dpo(self: "GRU", ref: "GRU", batch: tuple[Tensor, Tensor]) -> Tensor:
+        sequences, lengths = batch
+
+        # get targets and null token mask
+        targets = sequences[:, 1:]  # (2B, T-1)
+        max_length = torch.arange(
+            end=targets.size(1), device=sequences.device
+        ).unsqueeze(0)
+        mask = max_length < (lengths - 1).unsqueeze(1)
+
+        # --- Model ---
+        logits, hidden = self(sequences, lengths)
+        logprobs = log_softmax(logits, dim=-1)
+
+        # get logprob for each token in sequence
+        logprobs = logprobs[:, :-1, :]  # (2B, T-1, V)
+        token_logprobs = mask * logprobs.gather(
+            dim=-1,
+            index=targets.unsqueeze(-1),
+        ).squeeze(-1)
+        seq_logprobs = token_logprobs.sum(1)  # (2B,)
+
+        # --- Reference ---
+        with torch.no_grad():
+            ref_logits, _ = ref(sequences, lengths)
+            ref_logprobs = log_softmax(logits, dim=-1)
+
+            # get logprob for each token in sequence
+            ref_logprobs = ref_logprobs[:, :-1, :]  # (2B, T-1, V)
+            ref_token_logprobs = mask * ref_logprobs.gather(
+                dim=-1,
+                index=targets.unsqueeze(-1),
+            ).squeeze(-1)
+            ref_seq_logprobs = ref_token_logprobs.sum(1)  # (2B,)
+
+        # first half is chosen, second half is rejected
+        split = sequences.size(0) // 2
+        selected_logp = seq_logprobs[:split]
+        rejected_logp = seq_logprobs[split:]
+
+        ref_selected_logp = ref_seq_logprobs[:split]
+        ref_rejected_logp = ref_seq_logprobs[split:]
+
+        policy_diff = selected_logp - rejected_logp
+        ref_diff = ref_selected_logp - ref_rejected_logp
+
+        # beta = 0.1 hardcoded
+        loss = -logsigmoid(0.1 * (policy_diff - ref_diff)).mean()
         return loss
 
 

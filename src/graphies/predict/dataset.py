@@ -99,3 +99,81 @@ class CSVRandomizedGraphiesDataset(Dataset):
         if self.max_length:
             tokens = tokens[: self.max_length]
         return torch.as_tensor(tokens, dtype=torch.long)
+
+
+class CSVGraphiesDPODataset(Dataset):
+    def __init__(
+        self,
+        path: str | Path,
+        selected_column: str,
+        rejected_column: str,
+        tokenizer: GraphiesTokenizer,
+        max_length: int | None = None,
+    ):
+        if isinstance(path, str):
+            path = Path(path)
+        path = path.resolve()
+        self.dataset: DataFrame = pl.read_csv(
+            path,
+            columns=[
+                selected_column,
+                rejected_column,
+            ],
+        )
+        self.selected_column: str = selected_column
+        self.rejected_column: str = rejected_column
+        self.selected_graphies: Series = self.dataset[selected_column]
+        self.rejected_graphies: Series = self.dataset[rejected_column]
+        self.tokenizer: GraphiesTokenizer = tokenizer
+        self.max_length: int | None = max_length
+
+    def __len__(self):
+        return min(len(self.selected_graphies), len(self.rejected_graphies))
+
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
+        selected_graphies = self.selected_graphies[index]
+        rejected_graphies = self.rejected_graphies[index]
+        selected = self.tokenizer.encode("[BEGIN]" + selected_graphies + "[END]")
+        rejected = self.tokenizer.encode("[BEGIN]" + rejected_graphies + "[END]")
+        if self.max_length:
+            selected = selected[: self.max_length]
+            rejected = rejected[: self.max_length]
+        return (
+            torch.as_tensor(selected, dtype=torch.long),
+            torch.as_tensor(rejected, dtype=torch.long),
+        )
+
+
+class HFGraphiesDPODataset(Dataset):
+    def __init__(
+        self,
+        dataset: HFDataset,
+        selected_column: str,
+        rejected_column: str,
+        tokenizer: GraphiesTokenizer,
+        split: str = "train",
+        max_length: int | None = None,
+    ):
+        self.dataset: HFDataset = dataset
+        self.selected_column: str = selected_column
+        self.rejected_column: str = rejected_column
+        self.selected_graphies = self.dataset[split]
+        self.rejected_graphies = self.dataset[split]
+        self.tokenizer: GraphiesTokenizer = tokenizer
+        self.max_length: int | None = max_length
+
+    def __len__(self):
+        return min(len(self.selected_graphies), len(self.rejected_graphies))
+
+    def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
+        selected_graphies = self.selected_graphies[index][self.selected_column]
+        rejected_graphies = self.rejected_graphies[index][self.rejected_column]
+        selected = self.tokenizer.encode("[BEGIN]" + selected_graphies + "[END]")
+        rejected = self.tokenizer.encode("[BEGIN]" + rejected_graphies + "[END]")
+        if self.max_length:
+            selected = selected[: self.max_length]
+            rejected = rejected[: self.max_length]
+        return (
+            torch.as_tensor(selected, dtype=torch.long),
+            torch.as_tensor(rejected, dtype=torch.long),
+        )

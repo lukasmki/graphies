@@ -1,5 +1,6 @@
 import csv
 from collections.abc import Callable
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -131,7 +132,6 @@ class GraphiesTrainer:
 
         # save to path
         path = Path(path) if isinstance(path, str) else path
-        path.resolve()
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(ckpt, path.with_suffix(".pt"))
 
@@ -143,7 +143,6 @@ class GraphiesTrainer:
         }
         # save to path
         path = Path(path) if isinstance(path, str) else path
-        path.resolve()
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(model, path.with_suffix(".pt"))
 
@@ -181,11 +180,8 @@ class GraphiesTrainer:
             for i, batch in enumerate(pbar):
                 self.optimizer.zero_grad()
 
-                sequences, lengths = batch
-                sequences = sequences.to(self.device)
-                lengths = lengths.to(self.device)
-                loss = loss_fn(self.model, (sequences, lengths))
-
+                batch = tuple(t.to(self.device) for t in batch)
+                loss = loss_fn(self.model, batch)
                 loss.backward()
                 clip_grad_norm_(self.model.parameters(), 1.0)
                 self.optimizer.step()
@@ -199,28 +195,22 @@ class GraphiesTrainer:
                 # validation
                 val_loss = avg_val_loss = None
                 if val is not None and ((epoch + 1) % val_interval == 0):
-                    self.model.eval()
                     pbar = tqdm(val, desc=f"Validation {epoch + 1}")
                     val_loss = 0.0
                     for i, batch in enumerate(pbar):
-                        sequences, lengths = batch
-                        sequences = sequences.to(self.device)
-                        lengths = lengths.to(self.device)
-                        loss = loss_fn(self.model, (sequences, lengths))
+                        batch = tuple(t.to(self.device) for t in batch)
+                        loss = loss_fn(self.model, batch)
                         val_loss += loss.item()
                         avg_val_loss = val_loss / (i + 1)
                         pbar.set_postfix(loss=f"{avg_val_loss:0.4f}")
                 # test
                 test_loss = avg_test_loss = None
                 if test is not None and ((epoch + 1) % test_interval == 0):
-                    self.model.eval()
                     pbar = tqdm(test, desc=f"Test {epoch + 1}")
                     test_loss = 0.0
                     for i, batch in enumerate(pbar):
-                        sequences, lengths = batch
-                        sequences = sequences.to(self.device)
-                        lengths = lengths.to(self.device)
-                        loss = loss_fn(self.model, (sequences, lengths))
+                        batch = tuple(t.to(self.device) for t in batch)
+                        loss = loss_fn(self.model, batch)
                         test_loss += loss.item()
                         avg_test_loss = test_loss / (i + 1)
                         pbar.set_postfix(loss=f"{avg_test_loss:0.4f}")
@@ -263,3 +253,44 @@ class GraphiesTrainer:
 
         if log is not None:
             file.close()
+
+    def train_dpo(
+        self,
+        train: DataLoader,
+        epochs: int,
+        loss_fn: Callable[
+            [SupportedModel, SupportedModel, tuple[torch.Tensor, torch.Tensor]],
+            torch.Tensor,
+        ]
+        | None = None,
+        log: str | Path | None = None,
+        log_interval: int = 1,
+        checkpoint: str | Path | None = None,
+        checkpoint_interval: int = 1,
+        val: DataLoader | None = None,
+        val_interval: int = 1,
+        test: DataLoader | None = None,
+        test_interval: int = 1,
+    ) -> None:
+        if loss_fn is None:
+            try:
+                loss_fn = self.model.loss_fn_dpo
+            except AttributeError as e:
+                raise ValueError(
+                    "Either provide an eval/loss function or implement in model class"
+                ) from e
+        ref_model = deepcopy(self.model).eval().requires_grad_(False)
+        return self.train(
+            train=train,
+            epochs=epochs,
+            # inject the reference model
+            loss_fn=lambda model, batch: loss_fn(model, ref_model, batch),
+            log=log,
+            log_interval=log_interval,
+            checkpoint=checkpoint,
+            checkpoint_interval=checkpoint_interval,
+            val=val,
+            val_interval=val_interval,
+            test=test,
+            test_interval=test_interval,
+        )

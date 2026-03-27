@@ -85,6 +85,12 @@ class GraphiesTokenizer:
         padded = pad_sequence(batch, batch_first=True, padding_value=self.null_index)
         return padded, lengths
 
+    def collate_dpo(
+        self, batch: tuple[Tensor, Tensor] | list[tuple[Tensor, Tensor]]
+    ) -> tuple[Tensor, Tensor]:
+        selected, rejected = map(list, zip(*batch, strict=True))
+        return self.collate(selected + rejected)
+
     def strip(self, string: str) -> str:
         "Strips the graphies string of start and end tokens"
         if string.startswith("[BEGIN]"):
