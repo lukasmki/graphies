@@ -259,7 +259,7 @@ class GraphiesTrainer:
         train: DataLoader,
         epochs: int,
         loss_fn: Callable[
-            [SupportedModel, SupportedModel, tuple[torch.Tensor, torch.Tensor]],
+            [SupportedModel, tuple[torch.Tensor, torch.Tensor], SupportedModel],
             torch.Tensor,
         ]
         | None = None,
@@ -284,7 +284,7 @@ class GraphiesTrainer:
             train=train,
             epochs=epochs,
             # inject the reference model
-            loss_fn=lambda model, batch: loss_fn(model, ref_model, batch),
+            loss_fn=lambda model, batch: loss_fn(model, batch, ref_model),
             log=log,
             log_interval=log_interval,
             checkpoint=checkpoint,

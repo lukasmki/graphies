@@ -77,7 +77,7 @@ class GRU(nn.Module):
         return loss
 
     @staticmethod
-    def loss_fn_dpo(self: "GRU", ref: "GRU", batch: tuple[Tensor, Tensor]) -> Tensor:
+    def loss_fn_dpo(self: "GRU", batch: tuple[Tensor, Tensor], ref: "GRU") -> Tensor:
         sequences, lengths = batch
 
         # get targets and null token mask
@@ -102,7 +102,7 @@ class GRU(nn.Module):
         # --- Reference ---
         with torch.no_grad():
             ref_logits, _ = ref(sequences, lengths)
-            ref_logprobs = log_softmax(logits, dim=-1)
+            ref_logprobs = log_softmax(ref_logits, dim=-1)
 
             # get logprob for each token in sequence
             ref_logprobs = ref_logprobs[:, :-1, :]  # (2B, T-1, V)
