@@ -62,3 +62,11 @@ def test_ring_in_nestedbranch():
     ]
     for u, v, d in bonds:
         assert d["weight"] == graph.edges[u, v]["weight"]
+
+
+def test_edge_resolution():
+    graphies = "[A][GB][RC][A]"
+    graph = decode(graphies, grammar="tests/edgecolor.json")
+    assert graph.edges[0, 1]["color"] == "green"
+    assert graph.edges[1, 2]["color"] == "red"
+    assert graph.edges[2, 3]["color"] == "black"

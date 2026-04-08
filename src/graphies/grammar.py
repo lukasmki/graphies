@@ -123,19 +123,37 @@ class Grammar(BaseModel):
     def default_node(self) -> Node | None:
         return self._node_lookup.get("*")
 
-    def get_edge(self, weight: float) -> EdgeInstance:
-        "Get EdgeInstance from weight of edge"
-        if self.default_edge is not None and weight == self.default_edge.weight:
+    def get_edge(self, weight: float, symbol: str) -> EdgeInstance:
+        "Get EdgeInstance from symbol and weight of edge"
+        if (
+            (self.default_edge is not None)
+            and (weight == self.default_edge.weight)
+            and (symbol == self.default_edge.symbol)
+        ):
             return EdgeInstance(
                 symbol=self.default_edge.symbol,
                 weight=self.default_edge.weight,
                 data=self.default_edge.data,
             )
 
+        # lookup by symbol first
+        edge = self._edge_lookup.get(symbol, None)
+        if edge is not None and edge.weight == weight:
+            return EdgeInstance(symbol=edge.symbol, weight=edge.weight, data=edge.data)
+
+        # if not found or weight is wrong get edge by weight
         edges = self._edgeval_lookup.get(weight, None)
         if edges is None:
             raise ValueError(f"Could not find edge token with weight {weight}")
-        edge = edges[0]
+
+        # attempt to match symbol again
+        for edge in edges:
+            if edge.symbol == symbol:
+                return EdgeInstance(
+                    symbol=edge.symbol, weight=edge.weight, data=edge.data
+                )
+        else:  # return first match
+            edge = edges[0]
         return EdgeInstance(symbol=edge.symbol, weight=edge.weight, data=edge.data)
 
     def get_branch(self, size: int) -> BranchInstance:

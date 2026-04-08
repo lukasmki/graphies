@@ -238,7 +238,7 @@ class Decoder:
         graph.add_node(state.current_node, **node.model_dump(), **node.data, **mod_data)
 
         # add edge
-        edge = self.grammar.get_edge(edge_weight)
+        edge = self.grammar.get_edge(edge_weight, token.edge.symbol)
         graph.add_edge(
             state.previous_node, state.current_node, **edge.model_dump(), **edge.data
         )
@@ -379,7 +379,8 @@ class Decoder:
                 # add weight if an edge already exists
                 try:
                     edge = self.grammar.get_edge(
-                        link_weight + graph.edges[link.source, link.target]["weight"]
+                        link_weight + graph.edges[link.source, link.target]["weight"],
+                        link.edge.symbol,
                     )
                 except ValueError as e:
                     # if can't find edge token with the updated weight, continue
@@ -387,7 +388,7 @@ class Decoder:
                         logger.debug(e.args)
                     continue
             else:
-                edge = self.grammar.get_edge(link_weight)
+                edge = self.grammar.get_edge(link_weight, link.edge.symbol)
 
             # Add edge and update node degrees
             graph.add_edge(link.source, link.target, **edge.model_dump(), **edge.data)
