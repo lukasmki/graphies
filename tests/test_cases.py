@@ -45,7 +45,7 @@ def test_case3():
     Each of the trailing [=O] tokens should get their edge weight reduced
     """
     selfies = "[C][C][C][C][C][C][O][O][=O][=O][=O]"
-    reference = "[C][C][C][C][C][C][O][O][O][O][O]"
+    reference = "[C][C][C][C][C][C][O][O][-O][-O][-O]"
     graph = decode(selfies, grammar="tests/selfies.json")
     graphies = encode(graph, grammar="tests/selfies.json")
     assert graphies == reference
@@ -130,7 +130,7 @@ def test_case8():
     graph = decode(selfies, grammar="tests/selfies.json")
     graphies = encode(graph, grammar="tests/selfies.json")
     reference = sf.encoder(sf.decoder(selfies))
-    assert graphies == "[O][=N][O]"
+    assert graphies == "[O][=N][-O]"
     assert reference == "[O][=N][C][=O]"
 
 

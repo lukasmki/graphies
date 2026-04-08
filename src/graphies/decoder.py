@@ -218,13 +218,23 @@ class Decoder:
         else:
             edge_weight = token.edge.weight
 
-        edge_weight = min(edge_weight, degree, state.remaining_degree)
+        # edge weight reduction
+        # min(edge_weight, degree, state.remaining_degree)
+        max_edge_weight = min(degree, state.remaining_degree)
 
         # if adding a node is not possible
-        if edge_weight == 0:
+        if max_edge_weight == 0:
             if logger.isEnabledFor(logging.DEBUG):
                 logger.debug("Maxmum degree reached")
             return
+        # if exceeds maximum degree
+        if edge_weight > max_edge_weight:
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug(
+                    f"Edge with weight {edge_weight} exceeds degree {max_edge_weight}"
+                )
+                logger.debug(f"Scaling edge to {max_edge_weight}")
+            edge_weight = max_edge_weight
 
         # add node
         degree -= edge_weight
@@ -364,15 +374,24 @@ class Decoder:
             # get pending link weight
             source_degree = graph.nodes[link.source]["degree"]
             target_degree = graph.nodes[link.target]["degree"]
-            link_weight = min(source_degree, target_degree, link.edge.weight)
+            link_weight = link.edge.weight
+            max_link_weight = min(source_degree, target_degree)
 
             # check if it would violate maximum degree
-            if link_weight == 0:
+            if max_link_weight == 0:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(
                         f"Passing link {link.source} {link.target} that would exceed max degree {source_degree} {target_degree} {link.edge.weight}"
                     )
                 continue
+            # if exceeds maximum degree
+            if link_weight > max_link_weight:
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug(
+                        f"Link with weight {link_weight} exceeds degree {max_link_weight}"
+                    )
+                    logger.debug(f"Scaling edge to {max_link_weight}")
+                link_weight = max_link_weight
 
             # get edge instance for link_weight
             if graph.has_edge(link.source, link.target):

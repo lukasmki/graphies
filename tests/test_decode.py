@@ -65,8 +65,9 @@ def test_ring_in_nestedbranch():
 
 
 def test_edge_resolution():
-    graphies = "[A][GB][RC][A]"
+    graphies = "[A][GB][RC][A][BLink1][2][BA]"
     graph = decode(graphies, grammar="tests/edgecolor.json")
     assert graph.edges[0, 1]["color"] == "green"
     assert graph.edges[1, 2]["color"] == "red"
     assert graph.edges[2, 3]["color"] == "black"
+    assert graph.edges[0, 3]["color"] == "blue"
