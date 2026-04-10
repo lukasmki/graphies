@@ -15,6 +15,7 @@ from graphies.instances import (
     LinkInstance,
     Modifier,
     Node,
+    NodeInstance,
     Structure,
     TokenInstance,
     TokenType,
@@ -122,6 +123,15 @@ class Grammar(BaseModel):
     @cached_property
     def default_node(self) -> Node | None:
         return self._node_lookup.get("*")
+
+    def get_node(self, symbol: str) -> NodeInstance:
+        "Get NodeInstance from symbol not including edge/modifier symbols"
+        node = self._node_lookup.get(symbol, self.default_node)
+        if node is None:
+            raise ValueError(f"Could not find node with symbol {symbol}")
+        return NodeInstance(
+            symbol=node.symbol, degree=node.degree, data=node.data, modifiers=[]
+        )
 
     def get_edge(self, weight: float, symbol: str) -> EdgeInstance:
         "Get EdgeInstance from symbol and weight of edge"
