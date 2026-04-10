@@ -1,5 +1,6 @@
 import logging
 from collections.abc import Hashable, Iterable
+from pathlib import Path
 
 import networkx as nx
 from networkx import DiGraph, Graph
@@ -23,7 +24,14 @@ class Encoder:
     """GRAPHIES Encoder"""
 
     def __init__(self, grammar: Grammar):
-        self.grammar: Grammar = grammar
+        if isinstance(grammar, Grammar):
+            self.grammar: Grammar = grammar
+        elif isinstance(grammar, str | Path):
+            self.grammar: Grammar = Grammar.model_validate_json(
+                Path(grammar).read_text()
+            )
+        else:
+            raise TypeError(f"Expected Grammar, str, or Path; got {type(grammar)!r}")
         self.visited: list[Hashable] = list()
 
     def encode(self, graph: Graph, source: Hashable = None) -> str:

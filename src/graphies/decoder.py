@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Literal
 
 from networkx import Graph
@@ -78,8 +79,15 @@ class State:
 class Decoder:
     """GRAPHIES Decoder"""
 
-    def __init__(self, grammar: Grammar):
-        self.grammar: Grammar = grammar
+    def __init__(self, grammar: Grammar | str | Path):
+        if isinstance(grammar, Grammar):
+            self.grammar: Grammar = grammar
+        elif isinstance(grammar, str | Path):
+            self.grammar: Grammar = Grammar.model_validate_json(
+                Path(grammar).read_text()
+            )
+        else:
+            raise TypeError(f"Expected Grammar, str, or Path; got {type(grammar)!r}")
 
     def decode(self, text: str) -> Graph:
         """Decode GRAPHIES to NetworkX Graph
