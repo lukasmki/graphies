@@ -116,8 +116,7 @@ class GraphiesTrainer:
             checkpoint=ckpt,
         )
 
-    def save_checkpoint(self, path: str | Path) -> None:
-        "Save checkpoint to path for restart"
+    def get_checkpoint(self) -> dict[str, Any]:
         # update checkpoint dict
         ckpt = {
             "epoch": self.epoch + 1,
@@ -129,11 +128,15 @@ class GraphiesTrainer:
         }
         if self.scheduler:
             ckpt["scheduler_state_dict"] = self.scheduler.state_dict()
+        return ckpt
 
-        # save to path
+    def save_checkpoint(self, path: str | Path) -> dict[str, Any]:
+        "Save checkpoint to path for restart"
+        ckpt = self.get_checkpoint()
         path = Path(path) if isinstance(path, str) else path
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(ckpt, path.with_suffix(".pt"))
+        return ckpt
 
     def save_model(self, path: str | Path) -> None:
         "Save only the model to path"
@@ -162,7 +165,7 @@ class GraphiesTrainer:
         val_interval: int = 1,
         test: DataLoader | None = None,
         test_interval: int = 1,
-    ) -> None:
+    ) -> dict[str, Any]:
         writer = None  # init for csv logging
         if loss_fn is None:
             try:
@@ -254,6 +257,8 @@ class GraphiesTrainer:
         if log is not None:
             file.close()
 
+        return self.get_checkpoint()
+
     def train_dpo(
         self,
         train: DataLoader,
@@ -271,7 +276,7 @@ class GraphiesTrainer:
         val_interval: int = 1,
         test: DataLoader | None = None,
         test_interval: int = 1,
-    ) -> None:
+    ) -> dict[str, Any]:
         if loss_fn is None:
             try:
                 loss_fn = self.model.loss_fn_dpo
