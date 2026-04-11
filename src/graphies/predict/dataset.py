@@ -4,6 +4,7 @@ from pathlib import Path
 import polars as pl
 import torch
 from datasets import Dataset as HFDataset
+from datasets import DatasetDict as HFDatasetDict
 from polars import DataFrame
 from polars.series.series import Series
 from torch.utils.data import Dataset
@@ -15,15 +16,24 @@ from graphies.predict.tokenizer import GraphiesTokenizer
 class HFGraphiesDataset(Dataset):
     def __init__(
         self,
-        dataset: HFDataset,
+        dataset: HFDataset | HFDatasetDict,
         column: str,
         tokenizer: GraphiesTokenizer,
-        split: str = "train",
+        split: str | None = "train",
         max_length: int | None = None,
     ):
-        self.dataset: HFDataset = dataset
+        self.dataset: HFDataset | HFDatasetDict = dataset
         self.column: str = column
-        self.graphies = self.dataset[split]
+
+        if isinstance(dataset, HFDataset):
+            self.graphies = dataset
+        elif split is not None:
+            self.graphies = dataset[split]
+        else:
+            raise TypeError(
+                "dataset must be one of datasets.Dataset or datasets.DatasetDict with split"
+            )
+
         self.tokenizer: GraphiesTokenizer = tokenizer
         self.max_length: int | None = max_length
 
@@ -147,27 +157,37 @@ class CSVGraphiesDPODataset(Dataset):
 class HFGraphiesDPODataset(Dataset):
     def __init__(
         self,
-        dataset: HFDataset,
+        tokenizer: GraphiesTokenizer,
+        dataset: HFDataset | HFDatasetDict,
         selected_column: str,
         rejected_column: str,
-        tokenizer: GraphiesTokenizer,
-        split: str = "train",
+        # prompt_column: str | None = None,
+        split: str | None = "train",
         max_length: int | None = None,
     ):
-        self.dataset: HFDataset = dataset
+        self.dataset: HFDataset | HFDatasetDict = dataset
         self.selected_column: str = selected_column
         self.rejected_column: str = rejected_column
-        self.selected_graphies = self.dataset[split]
-        self.rejected_graphies = self.dataset[split]
+        # self.prompt_column: str | None = prompt_column
+
+        if isinstance(dataset, HFDataset):
+            self.graphies = dataset
+        elif split is not None:
+            self.graphies = dataset[split]
+        else:
+            raise TypeError(
+                "dataset must be one of datasets.Dataset or datasets.DatasetDict with split"
+            )
+
         self.tokenizer: GraphiesTokenizer = tokenizer
         self.max_length: int | None = max_length
 
     def __len__(self):
-        return min(len(self.selected_graphies), len(self.rejected_graphies))
+        return len(self.graphies)
 
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
-        selected_graphies = self.selected_graphies[index][self.selected_column]
-        rejected_graphies = self.rejected_graphies[index][self.rejected_column]
+        selected_graphies = self.graphies[index][self.selected_column]
+        rejected_graphies = self.graphies[index][self.rejected_column]
         selected = self.tokenizer.encode("[BEGIN]" + selected_graphies + "[END]")
         rejected = self.tokenizer.encode("[BEGIN]" + rejected_graphies + "[END]")
         if self.max_length:
