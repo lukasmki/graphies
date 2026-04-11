@@ -8,7 +8,7 @@ import numpy as np
 from graphies.predict import GraphiesModel, GraphiesTokenizer
 from graphies.predict.models import GRU
 
-TOKENIZER = GraphiesTokenizer.from_file("tests/selfies.json")
+TOKENIZER = GraphiesTokenizer("tests/selfies.json")
 MODEL = GraphiesModel.from_checkpoint(
     "tests/chembl-pretrained.pt",
     TOKENIZER,

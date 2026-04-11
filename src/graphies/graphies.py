@@ -29,17 +29,9 @@ class Graphies:
 
     @grammar.setter
     def grammar(self, value: Grammar | str | Path) -> None:
-        self._grammar: Grammar = self._load_grammar(grammar=value)
+        self._grammar: Grammar = Grammar.from_file(value)
         self._encoder: Encoder = Encoder(grammar=self._grammar)
         self._decoder: Decoder = Decoder(grammar=self._grammar)
-
-    @staticmethod
-    def _load_grammar(grammar: Grammar | str | Path) -> Grammar:
-        if isinstance(grammar, Grammar):
-            return grammar
-        if isinstance(grammar, str | Path):
-            return Grammar.model_validate_json(Path(grammar).read_text())
-        raise TypeError(f"Expected Grammar, str, or Path; got {type(grammar)!r}")
 
     def decode(self, graphies: str) -> Graph:
         """Decode GRAPHIES to a networkx Graph

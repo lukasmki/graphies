@@ -5,6 +5,7 @@ from functools import cached_property
 from itertools import product
 from pathlib import Path
 from re import Pattern
+from typing import Union
 
 from pydantic import BaseModel, PrivateAttr
 
@@ -113,8 +114,13 @@ class Grammar(BaseModel):
                     yield token
 
     @classmethod
-    def from_file(cls, path: str | Path) -> "Grammar":
-        return cls.model_validate_json(Path(path).read_text())
+    def from_file(cls, path: Union[str, Path, "Grammar"]) -> "Grammar":
+        if isinstance(path, Grammar):
+            return path
+        elif isinstance(path, str | Path):
+            return cls.model_validate_json(Path(path).read_text())
+        else:
+            raise TypeError(f"Expected Grammar, str, or Path; got {type(path)!r}")
 
     @cached_property
     def default_edge(self) -> Edge | None:

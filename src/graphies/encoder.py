@@ -23,15 +23,8 @@ logger = logging.getLogger(__name__)
 class Encoder:
     """GRAPHIES Encoder"""
 
-    def __init__(self, grammar: Grammar):
-        if isinstance(grammar, Grammar):
-            self.grammar: Grammar = grammar
-        elif isinstance(grammar, str | Path):
-            self.grammar: Grammar = Grammar.model_validate_json(
-                Path(grammar).read_text()
-            )
-        else:
-            raise TypeError(f"Expected Grammar, str, or Path; got {type(grammar)!r}")
+    def __init__(self, grammar: Grammar | str | Path):
+        self.grammar: Grammar = Grammar.from_file(grammar)
         self.visited: list[Hashable] = list()
 
     def encode(self, graph: Graph, source: Hashable = None) -> str:

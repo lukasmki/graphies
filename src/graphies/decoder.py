@@ -80,14 +80,7 @@ class Decoder:
     """GRAPHIES Decoder"""
 
     def __init__(self, grammar: Grammar | str | Path):
-        if isinstance(grammar, Grammar):
-            self.grammar: Grammar = grammar
-        elif isinstance(grammar, str | Path):
-            self.grammar: Grammar = Grammar.model_validate_json(
-                Path(grammar).read_text()
-            )
-        else:
-            raise TypeError(f"Expected Grammar, str, or Path; got {type(grammar)!r}")
+        self.grammar = Grammar.from_file(grammar)
 
     def decode(self, text: str) -> Graph:
         """Decode GRAPHIES to NetworkX Graph

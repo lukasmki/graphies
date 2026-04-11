@@ -1,6 +1,5 @@
 import re
 from pathlib import Path
-from typing import Self
 
 import torch
 from torch import Tensor
@@ -10,25 +9,19 @@ from graphies.grammar import Grammar
 
 
 class GraphiesTokenizer:
-    def __init__(self, grammar: Grammar):
-        self.grammar: Grammar = grammar
+    def __init__(self, grammar: Grammar | str | Path):
+        self.grammar: Grammar = Grammar.from_file(grammar)
         self.control: dict[str, int] = {
             "[NULL]": 0,
             "[BEGIN]": 1,
             "[END]": 2,
         }
         self.inv_control: dict[int, str] = {v: k for k, v in self.control.items()}
-        self.vocab: dict[str, int] = grammar.to_vocab()
+        self.vocab: dict[str, int] = self.grammar.to_vocab()
         self.inv_vocab: dict[int, str] = {v: k for k, v in self.vocab.items()}
 
         self.ncontrol: int = len(self.control)
         self.nvocab: int = len(self.vocab)
-
-    @classmethod
-    def from_file(cls, path: str | Path) -> Self:
-        """Convenience function that loads grammar from file"""
-        grammar = Grammar.from_file(path)
-        return cls(grammar)
 
     @property
     def vocab_size(self) -> int:
@@ -77,7 +70,7 @@ class GraphiesTokenizer:
         tokens: list[str] = [self.get_token_str(index) for index in sequence]
         return "".join(tokens)
 
-    def collate(self, batch: Tensor | list[Tensor]) -> tuple[Tensor, Tensor]:
+    def collate(self, batch: list[Tensor]) -> tuple[Tensor, Tensor]:
         """Pads the sequences to match the longest length sequence in the batch
         Returns the padded token sequences and sequence lengths
         """
@@ -85,9 +78,7 @@ class GraphiesTokenizer:
         padded = pad_sequence(batch, batch_first=True, padding_value=self.null_index)
         return padded, lengths
 
-    def collate_dpo(
-        self, batch: tuple[Tensor, Tensor] | list[tuple[Tensor, Tensor]]
-    ) -> tuple[Tensor, Tensor]:
+    def collate_dpo(self, batch: list[tuple[Tensor, Tensor]]) -> tuple[Tensor, Tensor]:
         selected, rejected = map(list, zip(*batch, strict=True))
         return self.collate(selected + rejected)
 

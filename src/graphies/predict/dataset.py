@@ -40,7 +40,7 @@ class HFGraphiesDataset(Dataset):
     def __len__(self):
         return len(self.graphies)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
         graphies = self.graphies[index][self.column]
         tokens = self.tokenizer.encode("[BEGIN]" + graphies + "[END]")
         if self.max_length:
