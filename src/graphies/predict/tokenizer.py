@@ -14,7 +14,8 @@ class GraphiesTokenizer:
         self.control: dict[str, int] = {
             "[NULL]": 0,
             "[BEGIN]": 1,
-            "[END]": 2,
+            "[ENDBEGIN]": 2,
+            "[END]": 3,
         }
         self.inv_control: dict[int, str] = {v: k for k, v in self.control.items()}
         self.vocab: dict[str, int] = self.grammar.to_vocab()
@@ -89,3 +90,16 @@ class GraphiesTokenizer:
         if string.endswith("[END]"):
             string = string[:-5]
         return string
+
+    def wrap(self, string: str, partial: bool = False) -> str:
+        """Wraps the graphies string with start and end tokens
+        if partial, ends with [ENDBEGIN] rather than [END]
+        """
+        if partial:
+            return f"[BEGIN]{string}[ENDBEGIN]"
+        return f"[BEGIN]{string}[END]"
+
+    def join(self, strings: list[str]) -> str:
+        "Concatenate prompt/response strings and wrap with control tokens"
+        assert len(strings) >= 2, "join requires at least a prompt and a response"
+        return f"[BEGIN]{'[ENDBEGIN]'.join(strings)}[END]"

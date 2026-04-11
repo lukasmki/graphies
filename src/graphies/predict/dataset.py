@@ -19,11 +19,13 @@ class HFGraphiesDataset(Dataset):
         dataset: HFDataset | HFDatasetDict,
         column: str,
         tokenizer: GraphiesTokenizer,
-        split: str | None = "train",
+        prompt_column: str | None = None,
+        split: str | None = None,
         max_length: int | None = None,
     ):
         self.dataset: HFDataset | HFDatasetDict = dataset
-        self.column: str = column
+        self.graphies_column: str = column
+        self.prompt_column = prompt_column
 
         if isinstance(dataset, HFDataset):
             self.graphies = dataset
@@ -41,8 +43,14 @@ class HFGraphiesDataset(Dataset):
         return len(self.graphies)
 
     def __getitem__(self, index: int):
-        graphies = self.graphies[index][self.column]
-        tokens = self.tokenizer.encode("[BEGIN]" + graphies + "[END]")
+        graphies = self.graphies[index][self.graphies_column]
+
+        if self.prompt_column is not None:
+            prompt = self.graphies[index][self.prompt_column]
+            tokens = self.tokenizer.encode(self.tokenizer.join([prompt, graphies]))
+        else:
+            tokens = self.tokenizer.encode(self.tokenizer.wrap(graphies))
+
         if self.max_length:
             tokens = tokens[: self.max_length]
         return torch.as_tensor(tokens, dtype=torch.long)
@@ -161,14 +169,14 @@ class HFGraphiesDPODataset(Dataset):
         dataset: HFDataset | HFDatasetDict,
         selected_column: str,
         rejected_column: str,
-        # prompt_column: str | None = None,
-        split: str | None = "train",
+        prompt_column: str | None = None,
+        split: str | None = None,
         max_length: int | None = None,
     ):
         self.dataset: HFDataset | HFDatasetDict = dataset
         self.selected_column: str = selected_column
         self.rejected_column: str = rejected_column
-        # self.prompt_column: str | None = prompt_column
+        self.prompt_column: str | None = prompt_column
 
         if isinstance(dataset, HFDataset):
             self.graphies = dataset
@@ -188,8 +196,19 @@ class HFGraphiesDPODataset(Dataset):
     def __getitem__(self, index: int) -> tuple[torch.Tensor, torch.Tensor]:
         selected_graphies = self.graphies[index][self.selected_column]
         rejected_graphies = self.graphies[index][self.rejected_column]
-        selected = self.tokenizer.encode("[BEGIN]" + selected_graphies + "[END]")
-        rejected = self.tokenizer.encode("[BEGIN]" + rejected_graphies + "[END]")
+
+        if self.prompt_column is not None:
+            prompt = self.graphies[index][self.prompt_column]
+            selected = self.tokenizer.encode(
+                self.tokenizer.join([prompt, selected_graphies])
+            )
+            rejected = self.tokenizer.encode(
+                self.tokenizer.join([prompt, rejected_graphies])
+            )
+        else:
+            selected = self.tokenizer.encode(self.tokenizer.wrap(selected_graphies))
+            rejected = self.tokenizer.encode(self.tokenizer.wrap(rejected_graphies))
+
         if self.max_length:
             selected = selected[: self.max_length]
             rejected = rejected[: self.max_length]
