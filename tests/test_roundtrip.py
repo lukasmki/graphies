@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -21,7 +22,13 @@ def test_roundtrip(path: Path):
     sf.set_semantic_constraints(constraints)
 
     # graphies
-    grammar = Grammar.from_file(GRAMMAR)
+    # use the same hypervalent constraints
+    grammar_dict = json.loads(GRAMMAR.read_text())
+    for node in grammar_dict["nodes"]:
+        if node["symbol"] == "N":
+            node["degree"] = 5
+
+    grammar = Grammar.model_validate(grammar_dict)
     decoder = Decoder(grammar)
     encoder = Encoder(grammar)
 
