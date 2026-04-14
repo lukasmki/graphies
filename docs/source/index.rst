@@ -9,6 +9,7 @@ In molecular graphs, this enables generation of always valid bond topologies for
 .. toctree::
    :maxdepth: 2
 
+   overview
    grammar
    decoder
    encoder

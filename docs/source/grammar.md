@@ -5,9 +5,7 @@ It also can set node or edge level data on decoded graphs for compatibility with
 The Grammar dataclass is also a subclass of the Pydantic `BaseModel` allowing Grammar objects to be constructed in a variety of ways. [cite-pydantic]
 I also provide a `.from_file` class method to instantiate a grammar instance directly from a JSON file.
 
-## Graph Tokenization
-
-### Node and Edge Tokens
+## Node and Edge Tokens
 
 In order to represent a simple, undirected graph as a string (or a sequence of tokens), we must first define the string (token) representations of the basic units of the graph: nodes and edges.
 
@@ -51,7 +49,7 @@ A common restriction that is particularly critical in molecule generation is max
 A standard carbon atom cannot make more than 4 covalent bonds, a nitrogen atom cannot make more than 3, and so on.
 Therefore, we require that each node type must have a defined maximum degree and each edge type must have a defined weight. In practice, node degrees could be set very large and edge weights set to zero to allow any number of these edges to connect to a node.
 
-### Node Modifiers
+## Node Modifiers
 
 In molecular systems, atoms can be in one of many internal states. Any atom can possess a negative (-1) or positive (+1) charge or possess some number of explicit hydrogens (CH3, NH2, OH1, etc). They can also be chiral (typically denoted @ or @@).
 Some of these internal states modify the degree of the node; therefore I refer to these as modifiers. A simple solution for dealing with these modifiers is to enumerate every combination of modifier as its own node type; however, this is a bit redundant. Rather, modifiers can be defined and applied to nodes.
@@ -108,7 +106,7 @@ The modifier scheme for SELFIES modifiers is shown below.
 ]
 ```
 
-### Structure Tokens
+## Structure Tokens
 
 At this point, we have a robust description of the types of nodes and edges that compose the graph.
 Nodes in the graph can be represented in the form `[{edge_symbol}{node_symbol}{modifier_symbols}]`.
@@ -122,7 +120,8 @@ A single token modification would drastically alter the structure. The solution 
 
 Links are edges that bridge two nodes that are not sequential. SELFIES calls these ring-closure tokens. Similar to branches, they consist of a link (Ring) token and a set of numerical tokens. The numerical tokens indicate the node distance between the current node and the target node to link.
 
-For representing the node distance or branch size, we define a set of index tokens that have an associated value. In order to represent larger numbers with fewer digits, the index tokens are hexidecimal (base 16). Unlike SELFIES, these index tokens can be assigned unique numerical symbols or overload node/branch/link token symbols. The branch, link, and index section for the SELFIES grammar is shown below. Note how the index tokens are the same as 
+For representing the node distance or branch size, we define a set of index tokens that have an associated value. In order to represent larger numbers with fewer digits, the index tokens are hexidecimal (base 16). Unlike SELFIES, these index tokens can be assigned unique numerical symbols or overload node/branch/link token symbols. The branch, link, and index section for the SELFIES grammar is shown below.
+
 ```json
 {
     "branches" : [
