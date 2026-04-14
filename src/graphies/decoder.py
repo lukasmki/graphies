@@ -274,7 +274,6 @@ class Decoder:
     def handle_branch(self, token: TokenInstance, state: State):
         if logger.isEnabledFor(logging.DEBUG):
             assert isinstance(token.node, Structure)
-            assert state.previous_node is not None
             assert token.edge is not None
             logger.debug(f"Expecting {token.node.value} index token(s) for branch")
 
@@ -300,7 +299,6 @@ class Decoder:
     def handle_link(self, token: TokenInstance, state: State):
         if logger.isEnabledFor(logging.DEBUG):
             assert isinstance(token.node, Structure)
-            assert state.previous_node is not None
             assert token.edge is not None
             logger.debug(f"Expecting {token.node.value} index token(s) for link")
 
@@ -368,7 +366,7 @@ class Decoder:
             if link.source < 0 or link.target < 0:
                 if logger.isEnabledFor(logging.DEBUG):
                     logger.debug(
-                        f"Attempted to create link {link.source} {link.target}. Continuing."
+                        f"Attempted to create link to invalid target {link.source} {link.target}. Continuing."
                     )
                 continue
 
