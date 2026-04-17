@@ -43,17 +43,21 @@ class Graphies:
         """
         return self._decoder.decode(graphies)
 
-    def encode(self, graph: Graph, source: Hashable = None) -> str:
+    def encode(
+        self, graph: Graph, source: Hashable = None, source_end: bool = False
+    ) -> str:
         """Encode a networkx graph to GRAPHIES
 
         :param graph: Networkx graph to encode
         :type graph: Graph
         :param source: Source node to start encoding, defaults to None
         :type source: Hashable, optional
+        :param source_end: Place the source node at the end of the sequence, defaults to False
+        :type source_end: bool
         :return: GRAPHIES encoded graph
         :rtype: str
         """
-        return self._encoder.encode(graph, source=source)
+        return self._encoder.encode(graph, source=source, source_end=source_end)
 
     def recode(self, graphies: str) -> str:
         """Decode and re-encode GRAPHIES
@@ -74,12 +78,17 @@ def decode(graphies: str, grammar: Grammar | str | Path) -> Graph:
     return Graphies(grammar).decode(graphies)
 
 
-def encode(graph: Graph, grammar: Grammar | str | Path, source: Hashable = None) -> str:
+def encode(
+    graph: Graph,
+    grammar: Grammar | str | Path,
+    source: Hashable = None,
+    source_end: bool = False,
+) -> str:
     """Encode a networkx graph to GRAPHIES
 
     See :meth:`Graphies.encode` for full documentation.
     """
-    return Graphies(grammar).encode(graph, source=source)
+    return Graphies(grammar).encode(graph, source=source, source_end=source_end)
 
 
 def recode(graphies: str, grammar: Grammar | str | Path) -> str:

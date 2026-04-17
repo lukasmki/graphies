@@ -1,3 +1,4 @@
+from graphies.utils import reverse_tree
 import logging
 from collections.abc import Hashable, Iterable
 from pathlib import Path
@@ -27,7 +28,9 @@ class Encoder:
         self.grammar: Grammar = Grammar.from_file(grammar)
         self.visited: list[Hashable] = list()
 
-    def encode(self, graph: Graph, source: Hashable = None) -> str:
+    def encode(
+        self, graph: Graph, source: Hashable = None, source_end: bool = False
+    ) -> str:
         """Encode a NetworkX Graph to GRAPHIES sequence
 
         :param graph: Graph to encode
@@ -35,17 +38,25 @@ class Encoder:
         :param source: Root node to begin encoding, defaults to None
         :type source: Hashable, optional
         :raises ValueError: If a token cannot be found to represent graph structure (node, edge, branch/link length)
+        :param source_end: Place the source node at the end of the sequence, defaults to False
+        :type source_end: bool
         :return: GRAPHIES sequence
         :rtype: str
         """
         if len(graph) == 0:
             raise ValueError("Graph has no nodes")
-        # walk and build token sequence
+
+        # init dfs tree
         source = list(graph)[0] if source is None else source
         tree = nx.dfs_tree(graph, source=source, sort_neighbors=sorted)
+        if source_end:
+            tree = reverse_tree(tree)
+            source = next(n for n, d in tree.in_degree() if d == 0)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("STARTING WALK")
         self.visited = list()
+
+        # walk and build token sequence
         tokens = self.walk(graph, tree, node_id=source)
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("FINISHED WALK")
