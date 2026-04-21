@@ -1,0 +1,215 @@
+{
+  "$defs": {
+    "Edge": {
+      "properties": {
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Weight"
+        },
+        "data": {
+          "additionalProperties": true,
+          "title": "Data",
+          "type": "object"
+        }
+      },
+      "required": [
+        "symbol",
+        "weight"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "Modifier": {
+      "properties": {
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        },
+        "weight": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Weight"
+        },
+        "data": {
+          "additionalProperties": true,
+          "title": "Data",
+          "type": "object"
+        },
+        "allowed_nodes": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allowed Nodes"
+        },
+        "exceptions": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exceptions"
+        },
+        "disallowed_nodes": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Disallowed Nodes"
+        }
+      },
+      "required": [
+        "category",
+        "symbol",
+        "weight"
+      ],
+      "title": "Modifier",
+      "type": "object"
+    },
+    "Node": {
+      "properties": {
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        },
+        "degree": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Degree"
+        },
+        "data": {
+          "additionalProperties": true,
+          "title": "Data",
+          "type": "object"
+        }
+      },
+      "required": [
+        "symbol",
+        "degree"
+      ],
+      "title": "Node",
+      "type": "object"
+    },
+    "Structure": {
+      "properties": {
+        "symbol": {
+          "title": "Symbol",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "symbol",
+        "value"
+      ],
+      "title": "Structure",
+      "type": "object"
+    }
+  },
+  "description": "GRAPHIES Grammar\n\nThis subclasses the Pydantic BaseModel and can be constructed in many ways.\nSee the `Pydantic Docs <https://docs.pydantic.dev/latest/concepts/models/#model-methods-and-properties>`_ for more information.",
+  "properties": {
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/Node"
+      },
+      "title": "Nodes",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/Edge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "index": {
+      "items": {
+        "$ref": "#/$defs/Structure"
+      },
+      "title": "Index",
+      "type": "array"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/Structure"
+      },
+      "title": "Links",
+      "type": "array"
+    },
+    "branches": {
+      "items": {
+        "$ref": "#/$defs/Structure"
+      },
+      "title": "Branches",
+      "type": "array"
+    },
+    "modifiers": {
+      "items": {
+        "$ref": "#/$defs/Modifier"
+      },
+      "title": "Modifiers",
+      "type": "array"
+    }
+  },
+  "required": [
+    "nodes",
+    "edges",
+    "index",
+    "links",
+    "branches",
+    "modifiers"
+  ],
+  "title": "Grammar",
+  "type": "object"
+}
