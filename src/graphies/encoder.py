@@ -1,4 +1,3 @@
-from graphies.utils import reverse_tree
 import logging
 from collections.abc import Hashable, Iterable
 from pathlib import Path
@@ -15,6 +14,7 @@ from graphies.instances import (
     TokenInstance,
     TokenType,
 )
+from graphies.utils import reverse_tree
 
 __all__ = ["Encoder"]
 
