@@ -204,3 +204,41 @@ def test_reverse_tree():
         source_end=True,
     )
     assert graphies == "[C][=C][-C][=C][-C][=N][-Ring1][=Branch1]"
+
+
+def test_reverse_tree_sequence():
+    """Some graphs cannot be reverse_tree encoded to end at a particular node,
+    any graph that is a pure sequence must end at the beginning or at the end
+    """
+
+    graph = nx.Graph()
+    graph.add_nodes_from(
+        [
+            (0, {"symbol": "C", "degree": 4, "modifiers": []}),
+            (1, {"symbol": "C", "degree": 4, "modifiers": []}),
+            (2, {"symbol": "C", "degree": 4, "modifiers": []}),
+            (3, {"symbol": "N", "degree": 4, "modifiers": []}),
+            (4, {"symbol": "C", "degree": 4, "modifiers": []}),
+            (5, {"symbol": "C", "degree": 4, "modifiers": []}),
+        ]
+    )
+    graph.add_edges_from(
+        [
+            (0, 1, {"symbol": "-", "weight": 1}),
+            (1, 2, {"symbol": "-", "weight": 1}),
+            (2, 3, {"symbol": "-", "weight": 1}),
+            (3, 4, {"symbol": "-", "weight": 1}),
+            (4, 5, {"symbol": "-", "weight": 1}),
+        ]
+    )
+    try:
+        graphies = encode(
+            graph,
+            grammar="tests/selfies.json",
+            source=4,
+            source_end=True,
+        )
+    except TypeError:
+        graphies = None
+
+    assert graphies is None
