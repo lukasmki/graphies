@@ -1,23 +1,24 @@
 # GRAPHIES
 
-**GRAPH Indexed Embedded Strings**
+<div align="center" width='100%'>
+<img src='assets/logo.png' width='50%' alt='GRAPHIES logo'/>
+</div>
 
 `graphies` is a Python library for encoding degree-limited graphs with discrete node and edge types as GRAPHIES strings.
 Using a JSON configurable grammar, you can represent molecules, proteins, colored graphs, and more!
 
-
 ## Overview
 
-`graphies` provides bidirectional conversion between GRAPHIES strings and `networkx.Graph` objects.
+`graphies` provides bidirectional conversion between GRAPHIES strings and `networkx` graphs.
 
 Graph transcoding is governed by a Grammar that defines:
+
 - A set of node types and their maximum degrees
 - A set of edge types and their weights
 - Node modifiers representing node internal state, containing data or altering node degree
 - Structural token symbols including fork/branch symbols, link/ring-closure symbols, and optionally self-referencing numeric symbols.
 
 GRAPHIES are more akin to computer programs than natural language. Given a particular grammar, a GRAPHIES token sequence provides an ordered set of instructions to deterministically reproduce the encoded graph.
-
 
 ## Installation
 
